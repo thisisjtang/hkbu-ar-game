@@ -60,7 +60,7 @@
             display: none !important;
         }
         
-        /* ==================== NAVIGATION ARROW ==================== */
+        /* ==================== NAVIGATION ARROW (FIXED FOR ROTATION) ==================== */
         #arrow-container {
             position: fixed;
             top: 50%;
@@ -69,19 +69,22 @@
             z-index: 15;
             display: none;
             pointer-events: none;
+            /* Pulse animation only affects opacity - no transform conflicts */
+            animation: arrowPulse 2s ease-in-out infinite;
         }
         
         #navigation-arrow {
             width: 100%;
             height: 100%;
             clip-path: polygon(50% 0%, 0% 70%, 30% 70%, 30% 100%, 70% 100%, 70% 70%, 100% 70%);
+            /* Smooth transition for JavaScript rotation */
             transition: transform 0.3s ease-out;
-            animation: arrowPulse 2s ease-in-out infinite;
         }
         
+        /* Pulse animation - only opacity changes to avoid transform conflicts */
         @keyframes arrowPulse {
-            0%, 100% { opacity: 0.9; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.1); }
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; }
         }
         
         /* ==================== STATUS PANEL ==================== */
@@ -305,6 +308,32 @@
             white-space: pre-line;
             line-height: 1.5;
         }
+        
+        /* ==================== DEBUG PANEL ==================== */
+        #debug-compass {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.9);
+            color: #00FF00;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            z-index: 9999;
+            display: none;
+            border: 2px solid #00FF00;
+            min-width: 200px;
+        }
+        
+        #debug-compass div {
+            margin: 4px 0;
+        }
+        
+        #debug-compass span {
+            color: #00FFFF;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -361,6 +390,7 @@
                 // Navigation
                 arrowSmoothness: 0.3,                // Arrow rotation smoothness (0.1-1.0)
                 showDistance: true,                  // Show distance to checkpoint
+                showDebugPanel: true,                // Show compass debug info (set false for production)
                 
                 // Questions
                 correctAnswerDelay: 2000,            // Time to show correct answer (ms)
@@ -380,9 +410,6 @@
             },
             
             // ==================== CHECKPOINTS ====================
-            // To add more checkpoints, copy the format below
-            // To measure bearing: Stand at origin, use iPhone Compass, point toward checkpoint
-            // 0° = North, 90° = East, 180° = South, 270° = West
             checkpoints: [
                 {
                     name: "Library Steps",
@@ -396,7 +423,7 @@
                         "1958", 
                         "1960"
                     ],
-                    correctAnswerIndex: 1,           // Index starts at 0 (so 1 = second answer)
+                    correctAnswerIndex: 1,
                     hint: "It was founded in the mid-1950s, two years after 1954.",
                     arrivalMessage: "Welcome to the Library Steps!"
                 },
@@ -432,9 +459,6 @@
                     hint: "HKBU has a strong reputation in media and journalism programs.",
                     arrivalMessage: "Welcome to the Academic Building!"
                 }
-                
-                // TO ADD MORE CHECKPOINTS:
-                // Copy the block above, change the values, and add a comma after the previous block
             ]
         };
     </script>
@@ -494,13 +518,21 @@
             <div id="feedback"></div>
         </div>
     </div>
+    
+    <!-- Debug Panel -->
+    <div id="debug-compass">
+        <div>🧭 Compass Debug</div>
+        <div>Heading: <span id="debug-heading">0</span>°</div>
+        <div>Updates: <span id="debug-count">0</span></div>
+        <div>State: <span id="debug-state">-</span></div>
+        <div>Target: <span id="debug-target">-</span>°</div>
+        <div>Rotation: <span id="debug-rotation">0</span>°</div>
+    </div>
 
     <script>
         // ============================================
-        // GAME ENGINE (DON'T MODIFY UNLESS ADVANCED)
+        // GAME STATE VARIABLES
         // ============================================
-        
-        // Game State Variables
         let gameState = 'welcome';
         let currentCheckpointIndex = 0;
         let deviceHeading = 0;
@@ -508,6 +540,7 @@
         let videoStream = null;
         let scanningInterval = null;
         let isScanning = false;
+        let compassUpdateCount = 0;
         
         // ============================================
         // INITIALIZATION AND CONFIGURATION
@@ -556,32 +589,49 @@
                 document.getElementById('skip-video-btn').style.display = 'none';
             }
             
-            console.log('Configuration applied successfully');
+            console.log('✓ Configuration applied successfully');
         }
         
         // ============================================
-        // GAME FLOW CONTROL
+        // GAME INITIALIZATION (WITH FIXED PERMISSIONS)
         // ============================================
         async function startGame() {
-            console.log('Starting game...');
+            console.log('🎮 Starting game...');
             
             try {
-                // Request device orientation permission (iOS 13+)
+                // ===== REQUEST MOTION/ORIENTATION PERMISSION (iOS 13+) =====
                 if (typeof DeviceOrientationEvent !== 'undefined' && 
                     typeof DeviceOrientationEvent.requestPermission === 'function') {
                     
+                    console.log('📱 Requesting motion permission for iOS...');
+                    
                     const permission = await DeviceOrientationEvent.requestPermission();
+                    console.log('Motion permission result:', permission);
+                    
                     if (permission !== 'granted') {
-                        alert('Compass permission is required for navigation. Please allow access and try again.');
+                        alert('🧭 Compass permission is REQUIRED for navigation!\n\nPlease:\n1. Reload the page\n2. Tap "Allow" when prompted\n3. Check Settings → Safari → Motion & Orientation Access');
                         return;
                     }
                 }
                 
-                // Start compass listening
-                window.addEventListener('deviceorientationabsolute', handleOrientationChange, true);
-                window.addEventListener('deviceorientation', handleOrientationChange, true);
+                // ===== START COMPASS MONITORING =====
+                console.log('🧭 Setting up compass listeners...');
                 
-                // Request camera access
+                // Add multiple event listeners for maximum compatibility
+                window.addEventListener('deviceorientation', handleOrientationChange, true);
+                window.addEventListener('deviceorientationabsolute', handleOrientationChange, true);
+                
+                // Test compass after 2 seconds
+                setTimeout(() => {
+                    console.log('Current device heading:', Math.round(deviceHeading), '°');
+                    if (deviceHeading === 0 && compassUpdateCount === 0) {
+                        console.warn('⚠️ Compass may not be working - check permissions and calibration');
+                        alert('⚠️ Compass not detected!\n\nPlease:\n1. Open iPhone Compass app\n2. Calibrate by moving phone in figure-8\n3. Return to this game');
+                    }
+                }, 2000);
+                
+                // ===== REQUEST CAMERA ACCESS =====
+                console.log('📷 Requesting camera access...');
                 videoStream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: 'environment',
@@ -593,17 +643,15 @@
                 const videoElement = document.getElementById('camera-view');
                 videoElement.srcObject = videoStream;
                 
-                // Wait for video to be ready
                 await new Promise((resolve) => {
                     videoElement.onloadedmetadata = resolve;
                 });
                 
-                console.log('Permissions granted, camera started');
+                console.log('✓ All permissions granted, starting game');
                 
-                // Hide welcome screen
+                // Hide welcome screen and continue
                 hideOverlay('welcome-screen');
                 
-                // Check if intro video is enabled
                 if (GAME_CONFIG.video.enableIntroVideo) {
                     playIntroVideo();
                 } else {
@@ -611,8 +659,8 @@
                 }
                 
             } catch (error) {
-                console.error('Startup error:', error);
-                alert('Unable to access camera and sensors. Please:\n\n1. Allow camera permission\n2. Allow motion sensor permission\n3. Use Safari browser\n4. Try again');
+                console.error('❌ Startup error:', error);
+                alert('Unable to start game. Please:\n\n1. Use Safari browser (not Chrome)\n2. Allow camera permission\n3. Allow motion permission\n4. Check iPhone settings\n5. Try again');
             }
         }
         
@@ -620,7 +668,7 @@
         // VIDEO SYSTEM
         // ============================================
         function playIntroVideo() {
-            console.log('Playing intro video');
+            console.log('🎬 Playing intro video');
             gameState = 'introVideo';
             
             const videoElement = document.getElementById('game-video');
@@ -635,7 +683,6 @@
                 });
             }
             
-            // When video ends, continue to game
             videoElement.onended = () => {
                 hideOverlay('video-overlay');
                 promptOriginScan();
@@ -645,7 +692,7 @@
         }
         
         function playOutroVideo() {
-            console.log('Playing outro video');
+            console.log('🎬 Playing outro video');
             gameState = 'outroVideo';
             
             const videoElement = document.getElementById('game-video');
@@ -681,19 +728,50 @@
         }
         
         // ============================================
-        // COMPASS HANDLING
+        // COMPASS HANDLING (FIXED WITH SMOOTHING)
         // ============================================
         function handleOrientationChange(event) {
+            compassUpdateCount++;
+            let newHeading = null;
+            
+            // iOS devices - direct compass heading
             if (event.webkitCompassHeading !== undefined) {
-                deviceHeading = event.webkitCompassHeading;
-            } else if (event.absolute && event.alpha !== null) {
-                deviceHeading = 360 - event.alpha;
-            } else if (event.alpha !== null) {
-                deviceHeading = 360 - event.alpha;
+                newHeading = event.webkitCompassHeading;
+            } 
+            // Android devices - calculate from alpha
+            else if (event.alpha !== null) {
+                if (event.absolute) {
+                    newHeading = 360 - event.alpha;
+                } else {
+                    newHeading = 360 - event.alpha;
+                }
             }
             
-            if (gameState === 'navigating') {
-                updateNavigationArrow();
+            // Update global heading with smoothing
+            if (newHeading !== null) {
+                // Smooth compass readings to reduce jitter
+                const smoothingFactor = GAME_CONFIG.behavior.arrowSmoothness;
+                let diff = newHeading - deviceHeading;
+                
+                // Handle 360°/0° wrap-around
+                if (diff > 180) diff -= 360;
+                if (diff < -180) diff += 360;
+                
+                deviceHeading += diff * smoothingFactor;
+                
+                // Normalize to 0-360
+                if (deviceHeading < 0) deviceHeading += 360;
+                if (deviceHeading >= 360) deviceHeading -= 360;
+                
+                // Log every 30 updates to avoid spam
+                if (compassUpdateCount % 30 === 0) {
+                    console.log('🧭 Compass update:', Math.round(deviceHeading), '°');
+                }
+                
+                // Update arrow immediately if navigating
+                if (gameState === 'navigating') {
+                    updateNavigationArrow();
+                }
             }
         }
         
@@ -707,12 +785,11 @@
             }
             
             isScanning = true;
-            console.log('Starting QR scan for state:', gameState);
+            console.log('📷 Starting QR scan for state:', gameState);
             
             showOverlay('scanner-overlay');
             resetScannerAppearance();
             
-            // Set instruction text
             if (gameState === 'scanOrigin') {
                 document.getElementById('scanner-instruction').textContent = 'Scan the ORIGIN QR code to set your starting point';
             } else if (gameState === 'scanCheckpoint') {
@@ -720,7 +797,6 @@
                 document.getElementById('scanner-instruction').textContent = `Scan the QR code for: ${checkpoint.name}`;
             }
             
-            // Start scanning loop
             scanningInterval = setInterval(scanForQRCode, GAME_CONFIG.behavior.qrScanInterval);
         }
         
@@ -729,7 +805,6 @@
             const canvas = document.getElementById('qr-canvas');
             const context = canvas.getContext('2d');
             
-            // Check if video is ready
             if (video.readyState !== video.HAVE_ENOUGH_DATA) {
                 return;
             }
@@ -746,7 +821,7 @@
                 });
                 
                 if (qrCode && qrCode.data) {
-                    console.log('QR Code detected:', qrCode.data);
+                    console.log('✓ QR Code detected:', qrCode.data);
                     stopScanning();
                     handleQRCodeDetected(qrCode.data);
                 }
@@ -782,7 +857,6 @@
             
             frame.style.borderColor = GAME_CONFIG.appearance.scannerFrameColor;
             instruction.style.color = 'white';
-            instruction.textContent = 'Scanning...';
         }
         
         function showScannerError(message) {
@@ -799,7 +873,7 @@
             
             if (gameState === 'scanOrigin') {
                 if (qrContent === GAME_CONFIG.originQR.content) {
-                    console.log('Origin QR matched!');
+                    console.log('✓ Origin QR matched!');
                     hideOverlay('scanner-overlay');
                     isOriginSet = true;
                     
@@ -807,41 +881,39 @@
                         startNavigationToCheckpoint();
                     }, 500);
                 } else {
-                    console.log('Wrong origin QR:', qrContent);
+                    console.log('❌ Wrong origin QR:', qrContent);
                     showScannerError('❌ Wrong QR Code! Scan the ORIGIN marker');
                     
                     setTimeout(() => {
                         resetScannerAppearance();
-                        startQRScanning(); // Restart scanning
+                        startQRScanning();
                     }, GAME_CONFIG.behavior.scanErrorTimeout);
                 }
             } else if (gameState === 'scanCheckpoint') {
                 const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
                 const expectedQR = checkpoint.qrCode;
                 
-                console.log('Expected:', expectedQR, 'Got:', qrContent);
-                
                 if (qrContent === expectedQR) {
-                    console.log('Checkpoint QR matched!');
+                    console.log('✓ Checkpoint QR matched!');
                     hideOverlay('scanner-overlay');
                     
                     setTimeout(() => {
                         showQuestion();
                     }, 500);
                 } else {
-                    console.log('Wrong checkpoint QR');
+                    console.log('❌ Wrong checkpoint QR');
                     showScannerError(`❌ Wrong QR! Scan code for: ${checkpoint.name}`);
                     
                     setTimeout(() => {
                         resetScannerAppearance();
-                        startQRScanning(); // Restart scanning
+                        startQRScanning();
                     }, GAME_CONFIG.behavior.scanErrorTimeout);
                 }
             }
         }
         
         // ============================================
-        // NAVIGATION SYSTEM
+        // NAVIGATION SYSTEM (FIXED ARROW ROTATION)
         // ============================================
         function promptOriginScan() {
             gameState = 'scanOrigin';
@@ -870,7 +942,7 @@
             gameState = 'navigating';
             const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
             
-            console.log('Starting navigation to:', checkpoint.name);
+            console.log('🧭 Starting navigation to:', checkpoint.name);
             
             showStatusPanel();
             document.getElementById('arrow-container').style.display = 'block';
@@ -899,10 +971,21 @@
             
             const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
             const targetBearing = checkpoint.bearing;
-            const rotation = targetBearing - deviceHeading;
             
+            // Calculate rotation needed
+            let rotation = targetBearing - deviceHeading;
+            
+            // Normalize rotation to -180 to 180 range for shortest rotation
+            while (rotation > 180) rotation -= 360;
+            while (rotation < -180) rotation += 360;
+            
+            // Apply rotation to arrow
             const arrow = document.getElementById('navigation-arrow');
             arrow.style.transform = `rotate(${rotation}deg)`;
+            
+            // Update debug info
+            document.getElementById('debug-target').textContent = targetBearing;
+            document.getElementById('debug-rotation').textContent = Math.round(rotation);
         }
         
         function promptCheckpointScan() {
@@ -932,7 +1015,7 @@
             
             const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
             
-            console.log('Showing question for:', checkpoint.name);
+            console.log('❓ Showing question for:', checkpoint.name);
             
             document.getElementById('question-text').textContent = checkpoint.question;
             
@@ -971,7 +1054,7 @@
                 feedback.style.color = GAME_CONFIG.behavior.correctAnswerText;
                 feedback.style.border = `2px solid ${GAME_CONFIG.behavior.correctAnswerText}`;
                 
-                console.log('Correct answer! Moving to next checkpoint...');
+                console.log('✓ Correct answer! Moving to next checkpoint...');
                 
                 setTimeout(() => {
                     hideOverlay('question-overlay');
@@ -990,7 +1073,7 @@
                 feedback.style.color = GAME_CONFIG.behavior.incorrectAnswerText;
                 feedback.style.border = `2px solid ${GAME_CONFIG.behavior.incorrectAnswerText}`;
                 
-                console.log('Incorrect answer, allowing retry...');
+                console.log('✗ Incorrect answer, allowing retry...');
                 
                 setTimeout(() => {
                     feedback.textContent = '';
@@ -1019,8 +1102,31 @@
             btn.textContent = 'Restart Game';
             btn.onclick = () => location.reload();
             
-            console.log('Game completed!');
+            console.log('🎉 Game completed!');
         }
+        
+        // ============================================
+        // DEBUG PANEL UPDATE
+        // ============================================
+        function updateDebugPanel() {
+            if (!GAME_CONFIG.behavior.showDebugPanel) {
+                document.getElementById('debug-compass').style.display = 'none';
+                return;
+            }
+            
+            const debugPanel = document.getElementById('debug-compass');
+            if (gameState === 'navigating' && debugPanel) {
+                debugPanel.style.display = 'block';
+                document.getElementById('debug-heading').textContent = Math.round(deviceHeading);
+                document.getElementById('debug-count').textContent = compassUpdateCount;
+                document.getElementById('debug-state').textContent = gameState;
+            } else if (debugPanel) {
+                debugPanel.style.display = 'none';
+            }
+        }
+        
+        // Update debug panel every 200ms
+        setInterval(updateDebugPanel, 200);
         
         // ============================================
         // UI HELPER FUNCTIONS
@@ -1065,7 +1171,8 @@
         // ============================================
         window.addEventListener('DOMContentLoaded', () => {
             applyConfiguration();
-            console.log('HKBU Li Promenade AR Game v2.0 initialized and ready!');
+            console.log('🎮 HKBU Li Promenade AR Game v2.1 initialized and ready!');
+            console.log('📱 Please ensure you allow Motion & Orientation permissions');
         });
     </script>
 </body>
