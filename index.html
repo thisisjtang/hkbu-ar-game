@@ -171,16 +171,20 @@
             cursor: pointer;
         }
         
-        /* ==================== VIDEO PLAYER ==================== */
+        /* ==================== VIDEO PLAYER (YOUR CUSTOM SETTINGS) ==================== */
         #video-overlay {
             flex-direction: column;
             background: #000;
+            /* Applied your custom padding settings */
+            padding-top: 0px;
+            padding-left: 0px;
         }
         
         #game-video {
-            max-width: 100%;
-            max-height: 80vh;
             width: 100%;
+            /* Applied your custom dimensions */
+            max-width: 356px;
+            max-height: 650px;
         }
         
         #video-controls {
@@ -199,25 +203,34 @@
             cursor: pointer;
         }
         
-        /* ==================== QR SCANNER (REVERTED TO ORIGINAL CYAN BORDER) ==================== */
+        /* ==================== QR SCANNER (YOUR CUSTOM SETTINGS) ==================== */
         #scanner-container {
             text-align: center;
             color: white;
         }
         
         #scanner-frame {
-            /* Applied your measurements from the editor */
-            width: 292px;
-            height: 373px;
+            /* Applied your exact measurements */
+            width: 280px;
+            height: 280px;
+            top: 107px;
+            left: 39px;
             
-            /* Reverted to original cyan border style - NO corner frames */
-            border: 4px solid #00FFFF;
+            /* Applied your styling preferences */
+            border: 4px solid #00ffff;
             border-radius: 20px;
+            background: rgba(0, 255, 255, 0); /* Fully transparent as requested */
+            box-shadow: 0 0 16px #00ffff; /* Your custom glow intensity */
+            
+            /* Preserved original functionality */
             margin: 0 auto 30px;
             position: relative;
-            background: transparent;
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
             transition: border-color 0.3s ease;
+        }
+        
+        /* Scanner overlay background - Your custom transparency setting */
+        #scanner-overlay {
+            background: rgba(0, 0, 0, 0); /* Fully transparent as requested */
         }
         
         #scanner-frame::before {
@@ -257,7 +270,7 @@
             cursor: pointer;
         }
         
-        /* ==================== CUSTOM QUESTION PANEL WITH YOUR MEASUREMENTS ==================== */
+        /* ==================== QUIZ PANEL (YOUR CUSTOM SETTINGS) ==================== */
         #question-overlay {
             position: fixed;
             top: 0;
@@ -274,10 +287,10 @@
             height: 100%;
         }
         
-        /* Quiz Panel Background with Corner Frames */
+        /* Quiz Panel Background - Your custom measurements */
         #quiz-panel-background {
             position: absolute;
-            top: 58px;  /* From your editor positioning */
+            top: 58px;
             left: 50%;
             transform: translateX(-50%);
             
@@ -312,29 +325,32 @@
         .quiz-corner-bl { bottom: -15px; left: -15px; transform: rotate(-90deg); }
         .quiz-corner-br { bottom: -15px; right: -15px; transform: rotate(180deg); }
         
-        /* Question text positioned inside the pink panel area */
+        /* Question text - Your custom settings */
         #question-text {
             position: absolute;
-            top: 58px;  /* Aligned with panel top */
+            top: 58px;
             left: 50%;
             transform: translateX(-50%);
-            width: 200px;  /* Fits within panel width, avoiding BMO character */
             
-            font-size: 15px;
+            /* Applied your exact specifications */
+            width: 180px;
+            font-size: 14px;
+            text-align: left;
+            
+            /* Styling preserved */
             font-weight: bold;
             line-height: 1.4;
             color: #333;
-            text-align: center;
             text-shadow: 0 1px 2px rgba(255,255,255,0.7);
             
-            /* Position text in the right area of the pink panel */
+            /* Position text in the panel */
             margin-top: 40px;
             margin-left: 30px;
             
             z-index: 12;
         }
         
-        /* Answer buttons positioned based on your editor measurements */
+        /* Answer buttons container */
         #answer-buttons {
             position: absolute;
             top: 0;
@@ -344,6 +360,7 @@
             pointer-events: none;
         }
         
+        /* Answer buttons - Your custom settings */
         .answer-btn {
             position: absolute;
             left: 50%;
@@ -353,6 +370,7 @@
             /* Applied your exact measurements */
             width: 280px;
             height: 55px;
+            font-size: 17px;
             
             padding: 0;
             border: none;
@@ -367,7 +385,6 @@
             
             /* Text styling */
             color: #333;
-            font-size: 16px;
             font-weight: bold;
             text-shadow: 0 1px 1px rgba(255,255,255,0.8);
             
@@ -387,7 +404,7 @@
             transform: translateX(-50%);
         }
         
-        /* Button positioning from your editor measurements */
+        /* Button positioning - Your exact measurements */
         .answer-btn:nth-child(1) { top: 300px; }
         .answer-btn:nth-child(2) { top: 360px; }
         .answer-btn:nth-child(3) { top: 420px; }
@@ -592,7 +609,7 @@
         </div>
     </div>
     
-    <!-- QR Scanner Overlay (Original Cyan Border Style) -->
+    <!-- QR Scanner Overlay -->
     <div id="scanner-overlay" class="overlay hidden">
         <div id="scanner-container">
             <div id="scanner-frame"></div>
@@ -1220,7 +1237,7 @@
         }
         
         function hideOverlay(overlayId) {
-            document.getElementById(overlayId).classList.add('hidden');
+            document.getElementById(overlayId').classList.add('hidden');
         }
         
         function hideAllOverlays() {
@@ -1247,7 +1264,7 @@
         // ============================================
         window.addEventListener('DOMContentLoaded', () => {
             applyConfiguration();
-            console.log('🎮 HKBU Li Promenade AR Game v2.4 with custom measurements initialized!');
+            console.log('🎮 HKBU Li Promenade AR Game v2.5 with merged custom CSS initialized!');
             console.log('📱 Please ensure you allow Motion & Orientation permissions');
         });
     </script>
