@@ -171,18 +171,18 @@
             cursor: pointer;
         }
         
-        /* ==================== VIDEO PLAYER (YOUR CUSTOM SETTINGS) ==================== */
+        /* ==================== VIDEO PLAYER (YOUR CUSTOM CSS) ==================== */
         #video-overlay {
             flex-direction: column;
             background: #000;
-            /* Applied your custom padding settings */
+            /* Applied your custom padding */
             padding-top: 0px;
             padding-left: 0px;
         }
         
         #game-video {
             width: 100%;
-            /* Applied your custom dimensions */
+            /* Applied your custom video dimensions */
             max-width: 356px;
             max-height: 650px;
         }
@@ -203,34 +203,34 @@
             cursor: pointer;
         }
         
-        /* ==================== QR SCANNER (YOUR CUSTOM SETTINGS) ==================== */
+        /* ==================== QR SCANNER (YOUR CUSTOM CSS) ==================== */
+        /* Applied your transparent overlay background */
+        #scanner-overlay {
+            background: rgba(0, 0, 0, 0);
+        }
+        
         #scanner-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
             text-align: center;
             color: white;
         }
         
         #scanner-frame {
-            /* Applied your exact measurements */
+            /* Applied your exact measurements and styling */
+            position: absolute;
             width: 280px;
             height: 280px;
             top: 107px;
-            left: 39px;
+            left: 50%;
+            transform: translateX(-50%);
             
-            /* Applied your styling preferences */
             border: 4px solid #00ffff;
             border-radius: 20px;
-            background: rgba(0, 255, 255, 0); /* Fully transparent as requested */
-            box-shadow: 0 0 16px #00ffff; /* Your custom glow intensity */
-            
-            /* Preserved original functionality */
-            margin: 0 auto 30px;
-            position: relative;
+            background: rgba(0, 255, 255, 0);
+            box-shadow: 0 0 16px #00ffff;
             transition: border-color 0.3s ease;
-        }
-        
-        /* Scanner overlay background - Your custom transparency setting */
-        #scanner-overlay {
-            background: rgba(0, 0, 0, 0); /* Fully transparent as requested */
         }
         
         #scanner-frame::before {
@@ -253,13 +253,22 @@
         }
         
         #scanner-instruction {
+            position: absolute;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
             font-size: 18px;
-            margin-bottom: 25px;
             line-height: 1.5;
             transition: color 0.3s ease;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
         
         #cancel-scan-btn {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
             padding: 12px 30px;
             background: rgba(255, 255, 255, 0.2);
             color: white;
@@ -270,7 +279,7 @@
             cursor: pointer;
         }
         
-        /* ==================== QUIZ PANEL (YOUR CUSTOM SETTINGS) ==================== */
+        /* ==================== QUIZ PANEL (YOUR CUSTOM CSS) ==================== */
         #question-overlay {
             position: fixed;
             top: 0;
@@ -287,18 +296,16 @@
             height: 100%;
         }
         
-        /* Quiz Panel Background - Your custom measurements */
+        /* Quiz panel background with your exact dimensions */
         #quiz-panel-background {
             position: absolute;
+            /* Applied your custom measurements */
             top: 58px;
             left: 50%;
             transform: translateX(-50%);
-            
-            /* Applied your exact measurements */
             width: 251px;
             height: 222px;
             
-            /* Main quiz panel image */
             background-image: url('quiz-panel.png');
             background-size: 100% 100%;
             background-repeat: no-repeat;
@@ -325,25 +332,23 @@
         .quiz-corner-bl { bottom: -15px; left: -15px; transform: rotate(-90deg); }
         .quiz-corner-br { bottom: -15px; right: -15px; transform: rotate(180deg); }
         
-        /* Question text - Your custom settings */
+        /* Question text with your custom styling */
         #question-text {
             position: absolute;
             top: 58px;
             left: 50%;
             transform: translateX(-50%);
             
-            /* Applied your exact specifications */
-            width: 180px;
+            /* Applied your custom text properties */
             font-size: 14px;
             text-align: left;
+            width: 180px;
             
-            /* Styling preserved */
             font-weight: bold;
             line-height: 1.4;
             color: #333;
             text-shadow: 0 1px 2px rgba(255,255,255,0.7);
             
-            /* Position text in the panel */
             margin-top: 40px;
             margin-left: 30px;
             
@@ -360,14 +365,14 @@
             pointer-events: none;
         }
         
-        /* Answer buttons - Your custom settings */
+        /* Answer buttons with your custom styling */
         .answer-btn {
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
             pointer-events: auto;
             
-            /* Applied your exact measurements */
+            /* Applied your custom button dimensions and font */
             width: 280px;
             height: 55px;
             font-size: 17px;
@@ -376,14 +381,12 @@
             border: none;
             cursor: pointer;
             
-            /* Your custom button background */
             background-image: url('button-blue.png');
             background-size: 100% 100%;
             background-repeat: no-repeat;
             background-color: transparent;
             image-rendering: pixelated;
             
-            /* Text styling */
             color: #333;
             font-weight: bold;
             text-shadow: 0 1px 1px rgba(255,255,255,0.8);
@@ -404,7 +407,7 @@
             transform: translateX(-50%);
         }
         
-        /* Button positioning - Your exact measurements */
+        /* Applied your custom button positioning */
         .answer-btn:nth-child(1) { top: 300px; }
         .answer-btn:nth-child(2) { top: 360px; }
         .answer-btn:nth-child(3) { top: 420px; }
@@ -669,7 +672,6 @@
         function applyConfiguration() {
             const config = GAME_CONFIG;
             
-            // Apply visual styling for arrow
             const arrow = document.getElementById('navigation-arrow');
             const arrowContainer = document.getElementById('arrow-container');
             
@@ -678,16 +680,13 @@
             arrowContainer.style.width = config.appearance.arrowSize + 'px';
             arrowContainer.style.height = config.appearance.arrowSize + 'px';
             
-            // Apply UI colors
             document.getElementById('status-panel').style.borderTopColor = config.appearance.primaryColor;
             document.getElementById('checkpoint-name').style.color = config.appearance.primaryColor;
             
-            // Welcome screen
             document.getElementById('welcome-title').textContent = config.general.welcomeTitle;
             document.getElementById('welcome-title').style.color = config.appearance.primaryColor;
             document.getElementById('welcome-message').textContent = config.general.welcomeMessage;
             
-            // Buttons
             const startBtn = document.getElementById('start-game-btn');
             const actionBtn = document.getElementById('main-action-btn');
             
@@ -697,13 +696,12 @@
             actionBtn.style.background = `linear-gradient(135deg, ${config.appearance.buttonColor} 0%, ${config.appearance.buttonColor}DD 100%)`;
             actionBtn.style.boxShadow = `0 4px 15px ${config.appearance.buttonColor}66`;
             
-            // Video controls
             document.getElementById('skip-video-btn').textContent = config.video.skipButtonText;
             if (!config.video.showSkipButton) {
                 document.getElementById('skip-video-btn').style.display = 'none';
             }
             
-            console.log('✓ Configuration with custom measurements applied');
+            console.log('✓ Configuration applied successfully');
         }
         
         // ============================================
@@ -716,31 +714,17 @@
                 if (typeof DeviceOrientationEvent !== 'undefined' && 
                     typeof DeviceOrientationEvent.requestPermission === 'function') {
                     
-                    console.log('📱 Requesting motion permission for iOS...');
-                    
                     const permission = await DeviceOrientationEvent.requestPermission();
-                    console.log('Motion permission result:', permission);
                     
                     if (permission !== 'granted') {
-                        alert('🧭 Compass permission is REQUIRED for navigation!\n\nPlease:\n1. Reload the page\n2. Tap "Allow" when prompted\n3. Check Settings → Safari → Motion & Orientation Access');
+                        alert('🧭 Compass permission is REQUIRED for navigation!');
                         return;
                     }
                 }
                 
-                console.log('🧭 Setting up compass listeners...');
-                
                 window.addEventListener('deviceorientation', handleOrientationChange, true);
                 window.addEventListener('deviceorientationabsolute', handleOrientationChange, true);
                 
-                setTimeout(() => {
-                    console.log('Current device heading:', Math.round(deviceHeading), '°');
-                    if (deviceHeading === 0 && compassUpdateCount === 0) {
-                        console.warn('⚠️ Compass may not be working - check permissions and calibration');
-                        alert('⚠️ Compass not detected!\n\nPlease:\n1. Open iPhone Compass app\n2. Calibrate by moving phone in figure-8\n3. Return to this game');
-                    }
-                }, 2000);
-                
-                console.log('📷 Requesting camera access...');
                 videoStream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: 'environment',
@@ -756,7 +740,7 @@
                     videoElement.onloadedmetadata = resolve;
                 });
                 
-                console.log('✓ All permissions granted, starting game');
+                console.log('✓ All permissions granted');
                 
                 hideOverlay('welcome-screen');
                 
@@ -768,7 +752,7 @@
                 
             } catch (error) {
                 console.error('❌ Startup error:', error);
-                alert('Unable to start game. Please:\n\n1. Use Safari browser (not Chrome)\n2. Allow camera permission\n3. Allow motion permission\n4. Check iPhone settings\n5. Try again');
+                alert('Unable to start game. Please allow camera and motion permissions.');
             }
         }
         
@@ -776,7 +760,6 @@
         // VIDEO SYSTEM
         // ============================================
         function playIntroVideo() {
-            console.log('🎬 Playing intro video');
             gameState = 'introVideo';
             
             const videoElement = document.getElementById('game-video');
@@ -787,7 +770,7 @@
             
             if (GAME_CONFIG.video.autoPlayVideos) {
                 videoElement.play().catch(err => {
-                    console.log('Autoplay prevented, user must click play');
+                    console.log('Autoplay prevented');
                 });
             }
             
@@ -800,7 +783,6 @@
         }
         
         function playOutroVideo() {
-            console.log('🎬 Playing outro video');
             gameState = 'outroVideo';
             
             const videoElement = document.getElementById('game-video');
@@ -811,7 +793,7 @@
             
             if (GAME_CONFIG.video.autoPlayVideos) {
                 videoElement.play().catch(err => {
-                    console.log('Autoplay prevented, user must click play');
+                    console.log('Autoplay prevented');
                 });
             }
             
@@ -865,10 +847,6 @@
                 if (deviceHeading < 0) deviceHeading += 360;
                 if (deviceHeading >= 360) deviceHeading -= 360;
                 
-                if (compassUpdateCount % 30 === 0) {
-                    console.log('🧭 Compass update:', Math.round(deviceHeading), '°');
-                }
-                
                 if (gameState === 'navigating') {
                     updateNavigationArrow();
                 }
@@ -880,21 +858,19 @@
         // ============================================
         function startQRScanning() {
             if (isScanning) {
-                console.log('Already scanning, ignoring duplicate call');
                 return;
             }
             
             isScanning = true;
-            console.log('📷 Starting QR scan for state:', gameState);
             
             showOverlay('scanner-overlay');
             resetScannerAppearance();
             
             if (gameState === 'scanOrigin') {
-                document.getElementById('scanner-instruction').textContent = 'Scan the ORIGIN QR code to set your starting point';
+                document.getElementById('scanner-instruction').textContent = 'Scan the ORIGIN QR code';
             } else if (gameState === 'scanCheckpoint') {
                 const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-                document.getElementById('scanner-instruction').textContent = `Scan the QR code for: ${checkpoint.name}`;
+                document.getElementById('scanner-instruction').textContent = `Scan QR for: ${checkpoint.name}`;
             }
             
             scanningInterval = setInterval(scanForQRCode, GAME_CONFIG.behavior.qrScanInterval);
@@ -921,7 +897,6 @@
                 });
                 
                 if (qrCode && qrCode.data) {
-                    console.log('✓ QR Code detected:', qrCode.data);
                     stopScanning();
                     handleQRCodeDetected(qrCode.data);
                 }
@@ -931,7 +906,6 @@
         }
         
         function stopScanning() {
-            console.log('Stopping QR scanner');
             isScanning = false;
             
             if (scanningInterval) {
@@ -969,11 +943,8 @@
         }
         
         function handleQRCodeDetected(qrContent) {
-            console.log('Handling QR code:', qrContent, 'in state:', gameState);
-            
             if (gameState === 'scanOrigin') {
                 if (qrContent === GAME_CONFIG.originQR.content) {
-                    console.log('✓ Origin QR matched!');
                     hideOverlay('scanner-overlay');
                     isOriginSet = true;
                     
@@ -981,8 +952,7 @@
                         startNavigationToCheckpoint();
                     }, 500);
                 } else {
-                    console.log('❌ Wrong origin QR:', qrContent);
-                    showScannerError('❌ Wrong QR Code! Scan the ORIGIN marker');
+                    showScannerError('❌ Wrong QR! Scan ORIGIN marker');
                     
                     setTimeout(() => {
                         resetScannerAppearance();
@@ -991,18 +961,15 @@
                 }
             } else if (gameState === 'scanCheckpoint') {
                 const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-                const expectedQR = checkpoint.qrCode;
                 
-                if (qrContent === expectedQR) {
-                    console.log('✓ Checkpoint QR matched!');
+                if (qrContent === checkpoint.qrCode) {
                     hideOverlay('scanner-overlay');
                     
                     setTimeout(() => {
                         showQuestion();
                     }, 500);
                 } else {
-                    console.log('❌ Wrong checkpoint QR');
-                    showScannerError(`❌ Wrong QR! Scan code for: ${checkpoint.name}`);
+                    showScannerError(`❌ Wrong QR! Scan: ${checkpoint.name}`);
                     
                     setTimeout(() => {
                         resetScannerAppearance();
@@ -1017,7 +984,6 @@
         // ============================================
         function promptOriginScan() {
             gameState = 'scanOrigin';
-            console.log('Prompting origin scan');
             
             showStatusPanel();
             document.getElementById('checkpoint-name').textContent = 'Welcome to HKBU Li Promenade!';
@@ -1041,8 +1007,6 @@
             
             gameState = 'navigating';
             const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-            
-            console.log('🧭 Starting navigation to:', checkpoint.name);
             
             showStatusPanel();
             document.getElementById('arrow-container').style.display = 'block';
@@ -1087,8 +1051,6 @@
         function promptCheckpointScan() {
             gameState = 'scanCheckpoint';
             
-            console.log('Prompting checkpoint scan');
-            
             document.getElementById('arrow-container').style.display = 'none';
             
             const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
@@ -1103,15 +1065,13 @@
         }
         
         // ============================================
-        // QUESTION SYSTEM WITH CUSTOM GRAPHICS
+        // QUESTION SYSTEM
         // ============================================
         function showQuestion() {
             gameState = 'question';
             hideStatusPanel();
             
             const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-            
-            console.log('❓ Showing question for:', checkpoint.name);
             
             document.getElementById('question-text').textContent = checkpoint.question;
             
@@ -1148,8 +1108,6 @@
                 feedback.style.color = GAME_CONFIG.behavior.correctAnswerText;
                 feedback.style.border = `2px solid ${GAME_CONFIG.behavior.correctAnswerText}`;
                 
-                console.log('✓ Correct answer! Moving to next checkpoint...');
-                
                 setTimeout(() => {
                     hideOverlay('question-overlay');
                     currentCheckpointIndex++;
@@ -1166,8 +1124,6 @@
                 feedback.style.background = GAME_CONFIG.behavior.incorrectAnswerBg;
                 feedback.style.color = GAME_CONFIG.behavior.incorrectAnswerText;
                 feedback.style.border = `2px solid ${GAME_CONFIG.behavior.incorrectAnswerText}`;
-                
-                console.log('✗ Incorrect answer, allowing retry...');
                 
                 setTimeout(() => {
                     feedback.textContent = '';
@@ -1195,12 +1151,10 @@
             const btn = document.getElementById('main-action-btn');
             btn.textContent = 'Restart Game';
             btn.onclick = () => location.reload();
-            
-            console.log('🎉 Game completed!');
         }
         
         // ============================================
-        // DEBUG PANEL UPDATE
+        // DEBUG PANEL
         // ============================================
         function updateDebugPanel() {
             if (!GAME_CONFIG.behavior.showDebugPanel) {
@@ -1222,7 +1176,7 @@
         setInterval(updateDebugPanel, 200);
         
         // ============================================
-        // UI HELPER FUNCTIONS
+        // UI HELPER FUNCTIONS (FIXED)
         // ============================================
         function showStatusPanel() {
             document.getElementById('status-panel').classList.remove('hidden');
@@ -1237,7 +1191,7 @@
         }
         
         function hideOverlay(overlayId) {
-            document.getElementById(overlayId').classList.add('hidden');
+            document.getElementById(overlayId).classList.add('hidden');
         }
         
         function hideAllOverlays() {
@@ -1260,12 +1214,11 @@
         });
         
         // ============================================
-        // INITIALIZE ON LOAD
+        // INITIALIZE
         // ============================================
         window.addEventListener('DOMContentLoaded', () => {
             applyConfiguration();
-            console.log('🎮 HKBU Li Promenade AR Game v2.5 with merged custom CSS initialized!');
-            console.log('📱 Please ensure you allow Motion & Orientation permissions');
+            console.log('🎮 HKBU Li Promenade AR Game v2.6 - All Systems Fixed!');
         });
     </script>
 </body>
