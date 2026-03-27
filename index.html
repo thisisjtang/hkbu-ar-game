@@ -1,1227 +1,461 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>HKBU Li Promenade AR Guide</title>
-    
-    <!-- QR Code Scanner Library -->
-    <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
-    
-    <style>
-        /* ==================== BASE STYLES ==================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #000;
-            overflow: hidden;
-            width: 100vw;
-            height: 100vh;
-            position: fixed;
-        }
-        
-        /* ==================== CAMERA LAYER ==================== */
-        #camera-view {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            z-index: 1;
-        }
-        
-        #qr-canvas {
-            display: none;
-        }
-        
-        /* ==================== UI LAYERS ==================== */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.95);
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-        
-        /* ==================== NAVIGATION ARROW ==================== */
-        #arrow-container {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 15;
-            display: none;
-            pointer-events: none;
-            animation: arrowPulse 2s ease-in-out infinite;
-        }
-        
-        #navigation-arrow {
-            width: 100%;
-            height: 100%;
-            clip-path: polygon(50% 0%, 0% 70%, 30% 70%, 30% 100%, 70% 100%, 70% 70%, 100% 70%);
-            transition: transform 0.3s ease-out;
-        }
-        
-        @keyframes arrowPulse {
-            0%, 100% { opacity: 0.9; }
-            50% { opacity: 1; }
-        }
-        
-        /* ==================== STATUS PANEL ==================== */
-        #status-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.85) 100%);
-            backdrop-filter: blur(10px);
-            color: white;
-            padding: 25px 20px;
-            z-index: 20;
-            transition: transform 0.3s ease;
-        }
-        
-        #checkpoint-name {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            text-align: center;
-        }
-        
-        #distance-display {
-            color: #FFFFFF;
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-        
-        #instruction-text {
-            font-size: 15px;
-            text-align: center;
-            margin-bottom: 15px;
-            line-height: 1.5;
-            color: #CCCCCC;
-            white-space: pre-line;
-        }
-        
-        #main-action-btn {
-            display: block;
-            width: 100%;
-            max-width: 300px;
-            margin: 0 auto;
-            padding: 15px 30px;
-            color: #000;
-            border: none;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        #main-action-btn:active {
-            transform: scale(0.98);
-        }
-        
-        /* ==================== WELCOME SCREEN ==================== */
-        #welcome-screen {
-            background: linear-gradient(135deg, #000000 0%, #1a1a2e 100%);
-            text-align: center;
-            padding: 40px 30px;
-        }
-        
-        #welcome-screen h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-        }
-        
-        #welcome-screen p {
-            color: white;
-            font-size: 16px;
-            line-height: 1.6;
-            margin-bottom: 30px;
-            white-space: pre-line;
-        }
-        
-        #start-game-btn {
-            padding: 18px 40px;
-            color: #000;
-            border: none;
-            border-radius: 12px;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        /* ==================== VIDEO PLAYER (ISSUE 1 FIXED) ==================== */
-        #video-overlay {
-            flex-direction: column;
-            background: #000;
-            padding-top: 0px;
-            padding-left: 0px;
-            position: relative;
-        }
-        
-        #game-video {
-            width: 100%;
-            max-width: 356px;
-            max-height: 650px;
-        }
-        
-        /* FIXED: Skip button positioned absolutely to prevent trimming */
-        #video-controls {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 101;
-        }
-        
-        #skip-video-btn {
-            padding: 12px 30px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 2px solid white;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            backdrop-filter: blur(5px);
-        }
-        
-        /* ==================== QR SCANNER (ISSUES 2 & 3 FIXED) ==================== */
-        #scanner-overlay {
-            background: transparent; /* No background - mask effect handles tinting */
-        }
-        
-        #scanner-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-        
-        #scanner-frame {
-            position: absolute;
-            width: 280px;
-            height: 280px;
-            top: 107px;
-            left: 50%;
-            transform: translateX(-50%);
-            
-            border: 4px solid #00ffff;
-            border-radius: 20px;
-            background: transparent; /* ISSUE 3 FIXED: Inside scanner is transparent */
-            
-            /* ISSUE 3 FIXED: Creates 80% tinted overlay outside scanner square */
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.8), 0 0 16px #00ffff;
-            
-            transition: border-color 0.3s ease;
-            z-index: 10;
-        }
-        
-        #scanner-frame::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 60px;
-            height: 60px;
-            border: 3px solid #00FFFF;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            animation: scanPulse 2s infinite;
-        }
-        
-        @keyframes scanPulse {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.3); }
-            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        }
-        
-        /* ISSUE 2 FIXED: Instruction positioned above scanner to avoid overlap */
-        #scanner-instruction {
-            position: absolute;
-            top: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            font-size: 18px;
-            line-height: 1.5;
-            text-align: center;
-            color: white;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.9);
-            z-index: 11;
-        }
-        
-        /* ISSUE 2 FIXED: Cancel button positioned below scanner to avoid overlap */
-        #cancel-scan-btn {
-            position: absolute;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 30px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 2px solid white;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            backdrop-filter: blur(5px);
-            z-index: 11;
-        }
-        
-        /* ==================== QUIZ PANEL (ISSUES 4 & 5 FIXED) ==================== */
-        #question-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.95);
-        }
-        
-        #question-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-        
-        /* ISSUE 4 FIXED: Clean panel without corner frames */
-        #quiz-panel-background {
-            position: absolute;
-            top: 58px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 251px;
-            height: 222px;
-            
-            background-image: url('quiz-panel.png');
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            background-color: transparent;
-            image-rendering: pixelated;
-            
-            z-index: 10;
-        }
-        
-        #question-text {
-            position: absolute;
-            top: 58px;
-            left: 50%;
-            transform: translateX(-50%);
-            
-            font-size: 14px;
-            text-align: left;
-            width: 155px;
-            
-            font-weight: bold;
-            line-height: 1.4;
-            color: #333;
-            text-shadow: 0 1px 2px rgba(255,255,255,0.7);
-            
-            margin-top: 40px;
-            margin-left: 30px;
-            
-            z-index: 12;
-        }
-        
-        #answer-buttons {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-        
-        .answer-btn {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            pointer-events: auto;
-            
-            width: 280px;
-            height: 55px;
-            font-size: 17px;
-            
-            padding: 0;
-            border: none;
-            cursor: pointer;
-            
-            background-image: url('button-blue.png');
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            background-color: transparent;
-            image-rendering: pixelated;
-            
-            color: #333;
-            font-weight: bold;
-            text-shadow: 0 1px 1px rgba(255,255,255,0.8);
-            
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s ease;
-        }
-        
-        .answer-btn:active {
-            transform: translateX(-50%) scale(0.98);
-        }
-        
-        .answer-btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: translateX(-50%);
-        }
-        
-        .answer-btn:nth-child(1) { top: 300px; }
-        .answer-btn:nth-child(2) { top: 360px; }
-        .answer-btn:nth-child(3) { top: 420px; }
-        .answer-btn:nth-child(4) { top: 480px; }
-        
-        /* ISSUE 5 FIXED: Feedback stays until Continue button pressed */
-        #feedback {
-            position: absolute;
-            bottom: 120px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 300px;
-            
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            white-space: pre-line;
-            line-height: 1.5;
-            text-align: center;
-            z-index: 20;
-        }
-        
-        /* ISSUE 5 FIXED: Continue button for correct answers */
-        #continue-btn {
-            position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
-            z-index: 21;
-            display: none;
-            transition: all 0.3s ease;
-        }
-        
-        #continue-btn:active {
-            transform: translateX(-50%) scale(0.98);
-        }
-        
-        /* ==================== DEBUG PANEL ==================== */
-        #debug-compass {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.9);
-            color: #00FF00;
-            padding: 12px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            z-index: 9999;
-            display: none;
-            border: 2px solid #00FF00;
-            min-width: 200px;
-        }
-        
-        #debug-compass div {
-            margin: 4px 0;
-        }
-        
-        #debug-compass span {
-            color: #00FFFF;
-            font-weight: bold;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>HKBU Li Promenade AR Guide</title>
+<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+<style>
+body{margin:0;font-family:sans-serif;background:#000;overflow:hidden;width:100vw;height:100vh;position:fixed;touch-action:none;}
+#camera‑view{position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:cover;z-index:1;will-change:auto;}
+.overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.95);}
+.hidden{display:none!important;}
+#status‑panel{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:white;padding:20px;border-radius:12px;text-align:center;z-index:50;width:90%;max-width:400px;border:2px solid #00ffff;}
+#checkpoint‑name{font-size:24px;font-weight:bold;margin-bottom:10px;}
+#distance‑display{font-size:32px;color:#00ffff;font-weight:bold;margin:15px 0;}
+#instruction‑text{font-size:16px;margin:15px 0;line-height:1.4;}
+#main‑action‑btn{margin-top:15px;padding:12px 30px;background:linear-gradient(135deg,#00ffff 0%,#0099ff 100%);color:#000;border:none;border-radius:25px;font-weight:bold;font-size:16px;cursor:pointer;transition:all .3s;}
+#main‑action‑btn:active{transform:scale(0.95);}
+#arrow‑container{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:15;display:none;pointer-events:none;width:120px;height:120px;will-change:transform;}
+#navigation‑arrow{width:100%;height:100%;clip-path:polygon(50% 0%,0% 70%,30% 70%,30% 100%,70% 100%,70% 70%,100% 70%);background:linear-gradient(135deg,#00ffff 0%,#00ffff 100%);filter:drop-shadow(0 0 20px #00ffff);transition:none;transform-origin:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+#video‑overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:100;display:none;align-items:center;justify-content:center;}
+#video‑overlay.hidden{display:none!important;}
+#video‑overlay:not(.hidden){display:flex!important;}
+#game‑video{max-width:90vw;max-height:90vh;border-radius:12px;}
+#video‑controls{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);z-index:101;}
+#skip‑video‑btn{padding:12px 30px;background:rgba(255,255,255,0.2);color:white;border:2px solid white;border-radius:8px;cursor:pointer;}
+#scanner‑overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:100;display:none;align-items:center;justify-content:center;}
+#scanner‑overlay.hidden{display:none!important;}
+#scanner‑overlay:not(.hidden){display:flex!important;}
+#scanner‑container{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+#scanner‑frame{position:absolute;width:280px;height:280px;border:4px solid #00ffff;border-radius:20px;background:transparent;box-shadow:0 0 0 9999px rgba(0,0,0,0.8),0 0 16px #00ffff;z-index:10;}
+#scanner‑instruction{position:absolute;top:60px;left:50%;transform:translateX(-50%);width:80%;font-size:18px;color:white;text-shadow:0 2px 8px rgba(0,0,0,0.9);z-index:11;text-align:center;}
+#cancel‑scan‑btn{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);padding:12px 30px;background:rgba(255,255,255,0.2);color:white;border:2px solid white;border-radius:8px;cursor:pointer;z-index:11;}
+#question‑overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:100;display:none;align-items:center;justify-content:center;}
+#question‑overlay.hidden{display:none!important;}
+#question‑overlay:not(.hidden){display:flex!important;}
+#question‑container{position:relative;width:90%;max-width:400px;}
+#quiz‑panel‑background{position:absolute;top:58px;left:50%;transform:translateX(-50%);width:251px;height:222px;background:url('quiz-panel.png') center/100% no-repeat;image-rendering:pixelated;z-index:10;}
+#question‑text{position:relative;z-index:15;margin-bottom:20px;font-size:18px;font-weight:bold;color:white;text-align:center;}
+#answer‑buttons{position:relative;z-index:20;display:flex;flex-direction:column;gap:15px;}
+.answer‑btn{width:280px;margin:0 auto;height:55px;background:url('button-blue.png') center/100% no-repeat;image-rendering:pixelated;border:none;color:#333;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.2s;font-size:14px;}
+.answer‑btn:active{transform:scale(0.98);}
+.answer‑btn:disabled{opacity:0.6;cursor:not-allowed;}
+#feedback{position:relative;z-index:25;margin-top:20px;padding:15px;border-radius:8px;text-align:center;font-weight:bold;min-height:60px;display:flex;align-items:center;justify-content:center;}
+#continue‑btn{position:relative;z-index:25;margin-top:20px;width:200px;margin-left:auto;margin-right:auto;padding:12px 30px;background:linear-gradient(135deg,#28a745 0%,#20c997 100%);color:white;border:none;border-radius:25px;cursor:pointer;display:none;font-weight:bold;}
+#debug‑compass{position:fixed;top:10px;left:10px;background:rgba(0,0,0,0.9);color:#0f0;padding:12px;border-radius:8px;font-size:13px;z-index:9999;display:none;font-family:monospace;}
+.debug‑row{margin:4px 0;}
+</style>
 </head>
 <body>
-    
-    <!-- ================================================================= -->
-    <!--                    UNITY-STYLE INSPECTOR                          -->
-    <!--                   CUSTOMIZE YOUR GAME HERE                        -->
-    <!-- ================================================================= -->
-    <script>
-        const GAME_CONFIG = {
-            // ==================== GENERAL SETTINGS ====================
-            general: {
-                gameName: "HKBU Li Promenade AR Guide",
-                welcomeTitle: "🎓 HKBU Li Promenade AR Guide",
-                welcomeMessage: "Welcome to an interactive navigation experience!\n\nYou'll explore HKBU's Li Promenade, answer questions about the university, and learn while you walk.\n\nPlease allow camera and motion sensor access when prompted.",
-                completionTitle: "🎉 Congratulations!",
-                completionMessage: "You have successfully completed the HKBU Li Promenade AR tour!\n\nThank you for exploring with us."
-            },
-            
-            // ==================== VIDEO SETTINGS ====================
-            video: {
-                enableIntroVideo: true,
-                enableOutroVideo: false,
-                introVideoPath: "intro.mp4",
-                outroVideoPath: "outro.mp4",
-                showSkipButton: true,
-                skipButtonText: "Skip Video",
-                autoPlayVideos: true
-            },
-            
-            // ==================== APPEARANCE SETTINGS ====================
-            appearance: {
-                arrowColor: "#00FFFF",
-                arrowSize: 120,
-                arrowGlowIntensity: 20,
-                primaryColor: "#00FFFF",
-                buttonColor: "#00FFFF",
-                scannerFrameColor: "#00FFFF",
-                scannerFrameSize: 280,
-                scannerErrorColor: "#FF3B30"
-            },
-            
-            // ==================== BEHAVIOR SETTINGS ====================
-            behavior: {
-                qrScanInterval: 500,
-                scanErrorTimeout: 1500,
-                arrowSmoothness: 0.3,
-                showDistance: true,
-                showDebugPanel: true,
-                incorrectAnswerDelay: 3000,
-                correctAnswerBg: "#d4edda",
-                correctAnswerText: "#155724",
-                incorrectAnswerBg: "#f8d7da",
-                incorrectAnswerText: "#721c24"
-            },
-            
-            // ==================== ORIGIN QR CODE ====================
-            originQR: {
-                content: "HKBU_LI_PROMENADE_ORIGIN",
-                displayName: "Origin Point"
-            },
-            
-            // ==================== CHECKPOINTS ====================
-            checkpoints: [
-                {
-                    name: "Library Steps",
-                    qrCode: "HKBU_CP1",
-                    bearing: 350,
-                    distance: 135,
-                    question: "1) Which gas is a major greenhouse gas that contributes to global warming?",
-                    answers: [
-                        "A. Nitrogen (N2)",
-                        "B. Oxygen (O2)",
-                        "C. Carbon dioxide (CO2)", 
-                        "D. Argon (Ar)"
-                    ],
-                    correctAnswerIndex: 2,
-                    hint: "CO2 traps heat in the atmosphere; nitrogen and oxygen do not trap heat as effectively.",
-                    arrivalMessage: "Welcome to the Library Steps!"
-                },
-                {
-                    name: "Student Center",
-                    qrCode: "HKBU_CP2",
-                    bearing: 135,
-                    distance: 45,
-                    question: "2) Which action best helps reduce greenhouse gas emissions from daily travel?",
-                    answers: [
-                        "A. Driving alone in a car for short trips",
-                        "B. Taking public transport, cycling, or walking when possible",
-                        "C. Leaving the engine idling while waiting",
-                        "D. Choosing frequent short flights instead of one train trip"
-                    ],
-                    correctAnswerIndex: 1,
-                    hint: "Public transport and active travel use less fuel per person than driving or flying, so they release less CO2.",
-                    arrivalMessage: "You've reached the Student Center!"
-                },
-                {
-                    name: "Academic Building",
-                    qrCode: "HKBU_CP3", 
-                    bearing: 270,
-                    distance: 35,
-                    question: "3) Which energy source is renewable and helps reduce air pollution when generating electricity?",
-                    answers: [
-                        "A. Coal",
-                        "B. Natural gas",
-                        "C. Wind",
-                        "D. Diesel"
-                    ],
-                    correctAnswerIndex: 2,
-                    hint: "Wind is a renewable source that produces electricity without direct emissions; coal, gas, and diesel are fossil fuels.",
-                    arrivalMessage: "Welcome to the Academic Building!"
-                }
-            ]
-        };
-    </script>
-    <!-- ================================================================= -->
-    
-    
-    <!-- Camera Stream Background -->
-    <video id="camera-view" autoplay muted playsinline></video>
-    <canvas id="qr-canvas"></canvas>
-    
-    <!-- Navigation Arrow -->
-    <div id="arrow-container">
-        <div id="navigation-arrow"></div>
-    </div>
-    
-    <!-- Status Panel -->
-    <div id="status-panel" class="hidden">
-        <div id="checkpoint-name"></div>
-        <div id="distance-display"></div>
-        <div id="instruction-text"></div>
-        <button id="main-action-btn"></button>
-    </div>
-    
-    <!-- Welcome Screen -->
-    <div id="welcome-screen" class="overlay">
-        <div>
-            <h1 id="welcome-title"></h1>
-            <p id="welcome-message"></p>
-            <button id="start-game-btn" onclick="startGame()">Start Adventure</button>
-        </div>
-    </div>
-    
-    <!-- Video Player -->
-    <div id="video-overlay" class="overlay hidden">
-        <video id="game-video" controls playsinline>
-            <source id="video-source" src="" type="video/mp4">
-        </video>
-        <div id="video-controls">
-            <button id="skip-video-btn" onclick="skipVideo()"></button>
-        </div>
-    </div>
-    
-    <!-- QR Scanner Overlay -->
-    <div id="scanner-overlay" class="overlay hidden">
-        <div id="scanner-container">
-            <div id="scanner-frame"></div>
-            <p id="scanner-instruction"></p>
-            <button id="cancel-scan-btn" onclick="cancelScanning()">Cancel</button>
-        </div>
-    </div>
-    
-    <!-- Question Overlay (Corner frames removed) -->
-    <div id="question-overlay" class="overlay hidden">
-        <div id="question-container">
-            <!-- Quiz Panel Background (no corner frames) -->
-            <div id="quiz-panel-background"></div>
-            
-            <!-- Question Text -->
-            <h2 id="question-text"></h2>
-            
-            <!-- Answer Buttons -->
-            <div id="answer-buttons"></div>
-            
-            <!-- Feedback Message -->
-            <div id="feedback"></div>
-            
-            <!-- Continue Button -->
-            <button id="continue-btn" onclick="continueToNextCheckpoint()">Continue ▶</button>
-        </div>
-    </div>
-    
-    <!-- Debug Panel -->
-    <div id="debug-compass">
-        <div>🧭 Compass Debug</div>
-        <div>Heading: <span id="debug-heading">0</span>°</div>
-        <div>Updates: <span id="debug-count">0</span></div>
-        <div>State: <span id="debug-state">-</span></div>
-        <div>Target: <span id="debug-target">-</span>°</div>
-        <div>Rotation: <span id="debug-rotation">0</span>°</div>
-    </div>
+<video id="camera‑view" autoplay muted playsinline webkit-playsinline></video>
+<canvas id="qr‑canvas" style="display:none;"></canvas>
 
-    <script>
-        // ============================================
-        // GAME STATE VARIABLES
-        // ============================================
-        let gameState = 'welcome';
-        let currentCheckpointIndex = 0;
-        let deviceHeading = 0;
-        let isOriginSet = false;
-        let videoStream = null;
-        let scanningInterval = null;
-        let isScanning = false;
-        let compassUpdateCount = 0;
-        
-        // ============================================
-        // INITIALIZATION AND CONFIGURATION
-        // ============================================
-        function applyConfiguration() {
-            const config = GAME_CONFIG;
-            
-            const arrow = document.getElementById('navigation-arrow');
-            const arrowContainer = document.getElementById('arrow-container');
-            
-            arrow.style.background = `linear-gradient(135deg, ${config.appearance.arrowColor} 0%, ${config.appearance.arrowColor}DD 100%)`;
-            arrow.style.filter = `drop-shadow(0 0 ${config.appearance.arrowGlowIntensity}px ${config.appearance.arrowColor})`;
-            arrowContainer.style.width = config.appearance.arrowSize + 'px';
-            arrowContainer.style.height = config.appearance.arrowSize + 'px';
-            
-            document.getElementById('status-panel').style.borderTopColor = config.appearance.primaryColor;
-            document.getElementById('checkpoint-name').style.color = config.appearance.primaryColor;
-            
-            document.getElementById('welcome-title').textContent = config.general.welcomeTitle;
-            document.getElementById('welcome-title').style.color = config.appearance.primaryColor;
-            document.getElementById('welcome-message').textContent = config.general.welcomeMessage;
-            
-            const startBtn = document.getElementById('start-game-btn');
-            const actionBtn = document.getElementById('main-action-btn');
-            
-            startBtn.style.background = `linear-gradient(135deg, ${config.appearance.buttonColor} 0%, ${config.appearance.buttonColor}DD 100%)`;
-            startBtn.style.boxShadow = `0 6px 20px ${config.appearance.buttonColor}80`;
-            
-            actionBtn.style.background = `linear-gradient(135deg, ${config.appearance.buttonColor} 0%, ${config.appearance.buttonColor}DD 100%)`;
-            actionBtn.style.boxShadow = `0 4px 15px ${config.appearance.buttonColor}66`;
-            
-            document.getElementById('skip-video-btn').textContent = config.video.skipButtonText;
-            if (!config.video.showSkipButton) {
-                document.getElementById('skip-video-btn').style.display = 'none';
-            }
-            
-            console.log('✓ Configuration applied successfully');
-        }
-        
-        // ============================================
-        // GAME INITIALIZATION
-        // ============================================
-        async function startGame() {
-            console.log('🎮 Starting game...');
-            
-            try {
-                if (typeof DeviceOrientationEvent !== 'undefined' && 
-                    typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    
-                    const permission = await DeviceOrientationEvent.requestPermission();
-                    
-                    if (permission !== 'granted') {
-                        alert('🧭 Compass permission is REQUIRED for navigation!');
-                        return;
-                    }
-                }
-                
-                window.addEventListener('deviceorientation', handleOrientationChange, true);
-                window.addEventListener('deviceorientationabsolute', handleOrientationChange, true);
-                
-                videoStream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: 'environment',
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                });
-                
-                const videoElement = document.getElementById('camera-view');
-                videoElement.srcObject = videoStream;
-                
-                await new Promise((resolve) => {
-                    videoElement.onloadedmetadata = resolve;
-                });
-                
-                console.log('✓ All permissions granted');
-                
-                hideOverlay('welcome-screen');
-                
-                if (GAME_CONFIG.video.enableIntroVideo) {
-                    playIntroVideo();
-                } else {
-                    promptOriginScan();
-                }
-                
-            } catch (error) {
-                console.error('❌ Startup error:', error);
-                alert('Unable to start game. Please allow camera and motion permissions.');
-            }
-        }
-        
-        // ============================================
-        // VIDEO SYSTEM
-        // ============================================
-        function playIntroVideo() {
-            gameState = 'introVideo';
-            
-            const videoElement = document.getElementById('game-video');
-            const videoSource = document.getElementById('video-source');
-            
-            videoSource.src = GAME_CONFIG.video.introVideoPath;
-            videoElement.load();
-            
-            if (GAME_CONFIG.video.autoPlayVideos) {
-                videoElement.play().catch(err => {
-                    console.log('Autoplay prevented');
-                });
-            }
-            
-            videoElement.onended = () => {
-                hideOverlay('video-overlay');
-                promptOriginScan();
-            };
-            
-            showOverlay('video-overlay');
-        }
-        
-        function skipVideo() {
-            const videoElement = document.getElementById('game-video');
-            videoElement.pause();
-            hideOverlay('video-overlay');
-            
-            if (gameState === 'introVideo') {
-                promptOriginScan();
-            } else if (gameState === 'outroVideo') {
-                gameComplete();
-            }
-        }
-        
-        // ============================================
-        // COMPASS HANDLING
-        // ============================================
-        function handleOrientationChange(event) {
-            compassUpdateCount++;
-            let newHeading = null;
-            
-            if (event.webkitCompassHeading !== undefined) {
-                newHeading = event.webkitCompassHeading;
-            } 
-            else if (event.alpha !== null) {
-                if (event.absolute) {
-                    newHeading = 360 - event.alpha;
-                } else {
-                    newHeading = 360 - event.alpha;
-                }
-            }
-            
-            if (newHeading !== null) {
-                const smoothingFactor = GAME_CONFIG.behavior.arrowSmoothness;
-                let diff = newHeading - deviceHeading;
-                
-                if (diff > 180) diff -= 360;
-                if (diff < -180) diff += 360;
-                
-                deviceHeading += diff * smoothingFactor;
-                
-                if (deviceHeading < 0) deviceHeading += 360;
-                if (deviceHeading >= 360) deviceHeading -= 360;
-                
-                if (gameState === 'navigating') {
-                    updateNavigationArrow();
-                }
-            }
-        }
-        
-        // ============================================
-        // QR SCANNING SYSTEM (ISSUE 2 FIXED)
-        // ============================================
-        function startQRScanning() {
-            if (isScanning) {
-                return;
-            }
-            
-            isScanning = true;
-            
-            // ISSUE 2 FIXED: Hide status panel to prevent overlap
-            hideStatusPanel();
-            
-            showOverlay('scanner-overlay');
-            resetScannerAppearance();
-            
-            if (gameState === 'scanOrigin') {
-                document.getElementById('scanner-instruction').textContent = 'Scan the ORIGIN QR code';
-            } else if (gameState === 'scanCheckpoint') {
-                const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-                document.getElementById('scanner-instruction').textContent = `Scan QR for: ${checkpoint.name}`;
-            }
-            
-            scanningInterval = setInterval(scanForQRCode, GAME_CONFIG.behavior.qrScanInterval);
-        }
-        
-        function scanForQRCode() {
-            const video = document.getElementById('camera-view');
-            const canvas = document.getElementById('qr-canvas');
-            const context = canvas.getContext('2d');
-            
-            if (video.readyState !== video.HAVE_ENOUGH_DATA) {
-                return;
-            }
-            
-            try {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
-                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                const qrCode = jsQR(imageData.data, imageData.width, imageData.height, {
-                    inversionAttempts: "dontInvert"
-                });
-                
-                if (qrCode && qrCode.data) {
-                    stopScanning();
-                    handleQRCodeDetected(qrCode.data);
-                }
-            } catch (error) {
-                console.error('QR scanning error:', error);
-            }
-        }
-        
-        function stopScanning() {
-            isScanning = false;
-            
-            if (scanningInterval) {
-                clearInterval(scanningInterval);
-                scanningInterval = null;
-            }
-        }
-        
-        function cancelScanning() {
-            stopScanning();
-            hideOverlay('scanner-overlay');
-            
-            // ISSUE 2 FIXED: Restore status panel when canceling
-            if (gameState === 'scanOrigin') {
-                promptOriginScan();
-            } else if (gameState === 'scanCheckpoint') {
-                showStatusPanel();
-            }
-        }
-        
-        function resetScannerAppearance() {
-            const frame = document.getElementById('scanner-frame');
-            const instruction = document.getElementById('scanner-instruction');
-            
-            frame.style.borderColor = GAME_CONFIG.appearance.scannerFrameColor;
-            instruction.style.color = 'white';
-        }
-        
-        function showScannerError(message) {
-            const frame = document.getElementById('scanner-frame');
-            const instruction = document.getElementById('scanner-instruction');
-            
-            frame.style.borderColor = GAME_CONFIG.appearance.scannerErrorColor;
-            instruction.style.color = GAME_CONFIG.appearance.scannerErrorColor;
-            instruction.textContent = message;
-        }
-        
-        function handleQRCodeDetected(qrContent) {
-            if (gameState === 'scanOrigin') {
-                if (qrContent === GAME_CONFIG.originQR.content) {
-                    hideOverlay('scanner-overlay');
-                    isOriginSet = true;
-                    
-                    setTimeout(() => {
-                        startNavigationToCheckpoint();
-                    }, 500);
-                } else {
-                    showScannerError('❌ Wrong QR! Scan ORIGIN marker');
-                    
-                    setTimeout(() => {
-                        resetScannerAppearance();
-                        startQRScanning();
-                    }, GAME_CONFIG.behavior.scanErrorTimeout);
-                }
-            } else if (gameState === 'scanCheckpoint') {
-                const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-                
-                if (qrContent === checkpoint.qrCode) {
-                    hideOverlay('scanner-overlay');
-                    
-                    setTimeout(() => {
-                        showQuestion();
-                    }, 500);
-                } else {
-                    showScannerError(`❌ Wrong QR! Scan: ${checkpoint.name}`);
-                    
-                    setTimeout(() => {
-                        resetScannerAppearance();
-                        startQRScanning();
-                    }, GAME_CONFIG.behavior.scanErrorTimeout);
-                }
-            }
-        }
-        
-        // ============================================
-        // NAVIGATION SYSTEM
-        // ============================================
-        function promptOriginScan() {
-            gameState = 'scanOrigin';
-            
-            showStatusPanel();
-            document.getElementById('checkpoint-name').textContent = 'Welcome to HKBU Li Promenade!';
-            document.getElementById('distance-display').textContent = '';
-            document.getElementById('instruction-text').textContent = 'To begin your journey, please scan the ORIGIN QR code located at the starting point.';
-            
-            const btn = document.getElementById('main-action-btn');
-            btn.textContent = 'Scan Origin QR Code';
-            btn.onclick = startQRScanning;
-        }
-        
-        function startNavigationToCheckpoint() {
-            if (currentCheckpointIndex >= GAME_CONFIG.checkpoints.length) {
-                if (GAME_CONFIG.video.enableOutroVideo) {
-                    playOutroVideo();
-                } else {
-                    gameComplete();
-                }
-                return;
-            }
-            
-            gameState = 'navigating';
-            const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-            
-            showStatusPanel();
-            document.getElementById('arrow-container').style.display = 'block';
-            
-            document.getElementById('checkpoint-name').textContent = `Navigate to: ${checkpoint.name}`;
-            
-            if (GAME_CONFIG.behavior.showDistance) {
-                document.getElementById('distance-display').textContent = `~${checkpoint.distance}m away`;
-            } else {
-                document.getElementById('distance-display').textContent = '';
-            }
-            
-            document.getElementById('instruction-text').textContent = `Follow the blue arrow to reach your destination.\n\nWhen you arrive, tap "I've Arrived".`;
-            
-            const btn = document.getElementById('main-action-btn');
-            btn.textContent = "I've Arrived";
-            btn.onclick = promptCheckpointScan;
-            
-            updateNavigationArrow();
-        }
-        
-        function updateNavigationArrow() {
-            if (gameState !== 'navigating' || currentCheckpointIndex >= GAME_CONFIG.checkpoints.length) {
-                return;
-            }
-            
-            const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-            const targetBearing = checkpoint.bearing;
-            
-            let rotation = targetBearing - deviceHeading;
-            
-            while (rotation > 180) rotation -= 360;
-            while (rotation < -180) rotation += 360;
-            
-            const arrow = document.getElementById('navigation-arrow');
-            arrow.style.transform = `rotate(${rotation}deg)`;
-            
-            document.getElementById('debug-target').textContent = targetBearing;
-            document.getElementById('debug-rotation').textContent = Math.round(rotation);
-        }
-        
-        function promptCheckpointScan() {
-            gameState = 'scanCheckpoint';
-            
-            document.getElementById('arrow-container').style.display = 'none';
-            
-            const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-            
-            document.getElementById('checkpoint-name').textContent = checkpoint.arrivalMessage || `Great! You've reached:`;
-            document.getElementById('distance-display').textContent = checkpoint.name;
-            document.getElementById('instruction-text').textContent = 'Now scan the checkpoint QR code to answer the question.';
-            
-            const btn = document.getElementById('main-action-btn');
-            btn.textContent = 'Scan Checkpoint QR';
-            btn.onclick = startQRScanning;
-        }
-        
-        // ============================================
-        // QUESTION SYSTEM (ISSUE 5 FIXED)
-        // ============================================
-        function showQuestion() {
-            gameState = 'question';
-            hideStatusPanel();
-            
-            const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-            
-            document.getElementById('question-text').textContent = checkpoint.question;
-            
-            const buttonContainer = document.getElementById('answer-buttons');
-            buttonContainer.innerHTML = '';
-            
-            checkpoint.answers.forEach((answer, index) => {
-                const button = document.createElement('button');
-                button.className = 'answer-btn';
-                button.textContent = answer;
-                button.onclick = () => checkAnswer(index);
-                buttonContainer.appendChild(button);
-            });
-            
-            // Reset feedback and hide continue button
-            const feedback = document.getElementById('feedback');
-            feedback.textContent = '';
-            feedback.style.background = '';
-            feedback.style.color = '';
-            feedback.style.border = '';
-            
-            document.getElementById('continue-btn').style.display = 'none';
-            
-            showOverlay('question-overlay');
-        }
-        
-        function checkAnswer(answerIndex) {
-            const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-            const feedback = document.getElementById('feedback');
-            const continueBtn = document.getElementById('continue-btn');
-            const buttons = document.querySelectorAll('.answer-btn');
-            
-            buttons.forEach(btn => btn.disabled = true);
-            
-            if (answerIndex === checkpoint.correctAnswerIndex) {
-                // ISSUE 5 FIXED: Show feedback that stays until Continue pressed
-                feedback.textContent = '✓ Correct! Well done!';
-                feedback.style.background = GAME_CONFIG.behavior.correctAnswerBg;
-                feedback.style.color = GAME_CONFIG.behavior.correctAnswerText;
-                feedback.style.border = `2px solid ${GAME_CONFIG.behavior.correctAnswerText}`;
-                
-                // Show Continue button instead of auto-proceeding
-                continueBtn.style.display = 'block';
-                
-                console.log('✓ Correct answer! Waiting for Continue button...');
-                
-            } else {
-                let feedbackText = '✗ Incorrect. Please try again.';
-                if (checkpoint.hint) {
-                    feedbackText += `\n\nHint: ${checkpoint.hint}`;
-                }
-                
-                feedback.textContent = feedbackText;
-                feedback.style.background = GAME_CONFIG.behavior.incorrectAnswerBg;
-                feedback.style.color = GAME_CONFIG.behavior.incorrectAnswerText;
-                feedback.style.border = `2px solid ${GAME_CONFIG.behavior.incorrectAnswerText}`;
-                
-                // Auto-clear incorrect feedback after delay
-                setTimeout(() => {
-                    feedback.textContent = '';
-                    feedback.style.background = '';
-                    feedback.style.color = '';
-                    feedback.style.border = '';
-                    buttons.forEach(btn => btn.disabled = false);
-                }, GAME_CONFIG.behavior.incorrectAnswerDelay);
-            }
-        }
-        
-        // ISSUE 5 FIXED: New function for Continue button
-        function continueToNextCheckpoint() {
-            hideOverlay('question-overlay');
-            currentCheckpointIndex++;
-            startNavigationToCheckpoint();
-        }
-        
-        // ============================================
-        // GAME COMPLETION
-        // ============================================
-        function gameComplete() {
-            gameState = 'complete';
-            hideAllOverlays();
-            document.getElementById('arrow-container').style.display = 'none';
-            
-            showStatusPanel();
-            document.getElementById('checkpoint-name').textContent = GAME_CONFIG.general.completionTitle;
-            document.getElementById('distance-display').textContent = '';
-            document.getElementById('instruction-text').textContent = GAME_CONFIG.general.completionMessage;
-            
-            const btn = document.getElementById('main-action-btn');
-            btn.textContent = 'Restart Game';
-            btn.onclick = () => location.reload();
-        }
-        
-        // ============================================
-        // DEBUG PANEL
-        // ============================================
-        function updateDebugPanel() {
-            if (!GAME_CONFIG.behavior.showDebugPanel) {
-                document.getElementById('debug-compass').style.display = 'none';
-                return;
-            }
-            
-            const debugPanel = document.getElementById('debug-compass');
-            if (gameState === 'navigating' && debugPanel) {
-                debugPanel.style.display = 'block';
-                document.getElementById('debug-heading').textContent = Math.round(deviceHeading);
-                document.getElementById('debug-count').textContent = compassUpdateCount;
-                document.getElementById('debug-state').textContent = gameState;
-            } else if (debugPanel) {
-                debugPanel.style.display = 'none';
-            }
-        }
-        
-        setInterval(updateDebugPanel, 200);
-        
-        // ============================================
-        // UI HELPER FUNCTIONS
-        // ============================================
-        function showStatusPanel() {
-            document.getElementById('status-panel').classList.remove('hidden');
-        }
-        
-        function hideStatusPanel() {
-            document.getElementById('status-panel').classList.add('hidden');
-        }
-        
-        function showOverlay(overlayId) {
-            document.getElementById(overlayId).classList.remove('hidden');
-        }
-        
-        function hideOverlay(overlayId) {
-            document.getElementById(overlayId).classList.add('hidden');
-        }
-        
-        function hideAllOverlays() {
-            const overlays = document.querySelectorAll('.overlay');
-            overlays.forEach(overlay => {
-                if (overlay.id !== 'welcome-screen') {
-                    overlay.classList.add('hidden');
-                }
-            });
-        }
-        
-        // ============================================
-        // CLEANUP
-        // ============================================
-        window.addEventListener('beforeunload', () => {
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-            }
-            stopScanning();
-        });
-        
-        // ============================================
-        // INITIALIZE
-        // ============================================
-        window.addEventListener('DOMContentLoaded', () => {
-            applyConfiguration();
-            console.log('🎮 HKBU Li Promenade AR Game v3.0 - All Issues Fixed!');
-        });
-    </script>
+<div id="arrow‑container"><div id="navigation‑arrow"></div></div>
+
+<div id="status‑panel" class="hidden">
+  <div id="checkpoint‑name"></div>
+  <div id="distance‑display"></div>
+  <div id="instruction‑text"></div>
+  <button id="main‑action‑btn"></button>
+</div>
+
+<div id="welcome‑screen" class="overlay">
+  <div style="text-align:center;color:white;">
+    <h1 id="welcome‑title"></h1>
+    <p id="welcome‑message" style="font-size:16px;line-height:1.6;max-width:300px;"></p>
+    <button id="start‑game‑btn" onclick="startGame()" style="margin-top:20px;padding:12px 30px;background:#00ffff;color:#000;border:none;border-radius:25px;font-weight:bold;cursor:pointer;">Start Adventure</button>
+  </div>
+</div>
+
+<div id="video‑overlay" class="hidden">
+  <video id="game‑video" controls playsinline webkit-playsinline style="max-width:90vw;max-height:80vh;border-radius:12px;"></video>
+  <div id="video‑controls">
+    <button id="skip‑video‑btn" onclick="skipVideo()">Skip Video</button>
+  </div>
+</div>
+
+<div id="scanner‑overlay" class="hidden">
+  <div id="scanner‑container">
+    <div id="scanner‑frame"></div>
+    <p id="scanner‑instruction"></p>
+    <button id="cancel‑scan‑btn" onclick="cancelScanning()">Cancel</button>
+  </div>
+</div>
+
+<div id="question‑overlay" class="hidden">
+  <div id="question‑container">
+    <h2 id="question‑text"></h2>
+    <div id="answer‑buttons"></div>
+    <div id="feedback"></div>
+    <button id="continue‑btn" onclick="continueToNextCheckpoint()">Continue ▶</button>
+  </div>
+</div>
+
+<div id="debug‑compass">
+  <div class="debug‑row">🧭 Compass Debug</div>
+  <div class="debug‑row">Heading: <span id="debug‑heading">0</span>°</div>
+  <div class="debug‑row">GPS Est: <span id="debug‑gps">--</span>m</div>
+  <div class="debug‑row">To CP: <span id="debug‑distance">--</span>m</div>
+  <div class="debug‑row">Bearing: <span id="debug‑target">-</span>°</div>
+  <div class="debug‑row">Rotation: <span id="debug‑rotation">0</span>°</div>
+  <div class="debug‑row">Updates: <span id="debug‑count">0</span></div>
+</div>
+
+<script>
+const GAME_CONFIG = {
+  general:{gameName:"HKBU Li Promenade AR Guide",welcomeTitle:"🎓 HKBU Li Promenade AR Guide",welcomeMessage:"Welcome...\nPlease allow camera and motion sensor access.",completionTitle:"🎉 Congratulations!",completionMessage:"You have successfully completed the HKBU Li Promenade AR tour!"},
+  video:{enableIntroVideo:true,enableOutroVideo:false,introVideoPath:"intro.mp4",outroVideoPath:"outro.mp4",showSkipButton:true,skipButtonText:"Skip Video",autoPlayVideos:true},
+  appearance:{arrowColor:"#00FFFF",arrowSize:120,arrowGlowIntensity:20,primaryColor:"#00FFFF",buttonColor:"#00FFFF",scannerFrameColor:"#00FFFF",scannerFrameSize:280,scannerErrorColor:"#FF3B30"},
+  behavior:{qrScanInterval:300,scanErrorTimeout:1500,arrowSmoothness:0.15,showDistance:true,showDebugPanel:true,incorrectAnswerDelay:3000,correctAnswerBg:"#d4edda",correctAnswerText:"#155724",incorrectAnswerBg:"#f8d7da",incorrectAnswerText:"#721c24",arrivalThresholdMeters:5},
+  originQR:{content:"HKBU_LI_PROMENADE_ORIGIN",displayName:"Origin Point"},
+  checkpoints:[
+    {name:"Library Steps",qrCode:"HKBU_CP1",bearing:45,distance:30,question:"What year was Hong Kong Baptist University founded?",answers:["1954","1956","1958","1960"],correctAnswerIndex:1,hint:"Founded in the mid‑1950s, two years after 1954.",arrivalMessage:"Welcome to the Library Steps!"},
+    {name:"Student Center",qrCode:"HKBU_CP2",bearing:135,distance:45,question:"What is HKBU's educational philosophy?",answers:["Academic Excellence Only","Whole Person Education","Research First","Professional Training"],correctAnswerIndex:1,hint:"Emphasises both academic knowledge and personal character.",arrivalMessage:"You've reached the Student Center!"},
+    {name:"Academic Building",qrCode:"HKBU_CP3",bearing:270,distance:35,question:"Which school is HKBU particularly well‑known for?",answers:["School of Medicine","School of Communication","School of Law","School of Agriculture"],correctAnswerIndex:1,hint:"Strong reputation in media and journalism.",arrivalMessage:"Welcome to the Academic Building!"}
+  ]
+};
+
+let gameState='welcome',currentCheckpointIndex=0,deviceHeading=0,isOriginSet=false,videoStream=null,scanningInterval=null,isScanning=false,compassUpdateCount=0;
+let lastGPSEstimate={x:0,y:0},originPoint={x:0,y:0},estimatedDistance=0,cameraActive=true,arrowRotationValue=0;
+const GPS_STEP=0.0001; // ~10m per unit at HKBU latitude
+
+function applyConfiguration(){
+  const c=GAME_CONFIG;
+  const arrow=document.getElementById('navigation‑arrow');
+  const container=document.getElementById('arrow‑container');
+  arrow.style.background=`linear-gradient(135deg,${c.appearance.arrowColor} 0%,${c.appearance.arrowColor}DD 100%)`;
+  arrow.style.filter=`drop-shadow(0 0 ${c.appearance.arrowGlowIntensity}px ${c.appearance.arrowColor})`;
+  container.style.width=c.appearance.arrowSize+'px';
+  container.style.height=c.appearance.arrowSize+'px';
+  document.getElementById('welcome‑title').textContent=c.general.welcomeTitle;
+  document.getElementById('welcome‑message').textContent=c.general.welcomeMessage;
+  document.getElementById('skip‑video‑btn').textContent=c.video.skipButtonText;
+  if(!c.video.showSkipButton)document.getElementById('skip‑video‑btn').style.display='none';
+  console.log('✓ Configuration applied');
+}
+
+function keepCameraActive(){
+  const video=document.getElementById('camera‑view');
+  if(video.paused){
+    console.log('🔄 Resuming camera...');
+    video.play().catch(e=>console.error('Resume error:',e));
+  }
+}
+
+async function startGame(){
+  console.log('🎮 Starting game...');
+  try{
+    if(DeviceOrientationEvent?.requestPermission){
+      const perm=await DeviceOrientationEvent.requestPermission();
+      if(perm!=='granted'){alert('🧭 Compass permission is REQUIRED');return;}
+    }
+    window.addEventListener('deviceorientation',handleOrientationChange,true);
+    window.addEventListener('deviceorientationabsolute',handleOrientationChange,true);
+    window.addEventListener('visibilitychange',()=>{
+      if(!document.hidden)keepCameraActive();
+    });
+    videoStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}},audio:false});
+    const video=document.getElementById('camera‑view');
+    video.srcObject=videoStream;
+    video.onloadedmetadata=()=>{
+      console.log('✓ Camera ready');
+      cameraActive=true;
+    };
+    video.onpause=()=>console.log('⚠ Camera paused');
+    video.onerror=(e)=>console.error('Camera error:',e);
+    document.addEventListener('visibilitychange',()=>{
+      if(!document.hidden && video.paused)video.play().catch(()=>{});
+    });
+    hideOverlay('welcome‑screen');
+    if(GAME_CONFIG.video.enableIntroVideo)playIntroVideo();
+    else promptOriginScan();
+  }catch(e){
+    console.error('❌ Startup error:',e);
+    alert('Allow camera and motion permissions.');
+  }
+}
+
+function playIntroVideo(){
+  gameState='introVideo';
+  document.getElementById('video‑source').src=GAME_CONFIG.video.introVideoPath;
+  const v=document.getElementById('game‑video');
+  v.load();
+  if(GAME_CONFIG.video.autoPlayVideos)v.play().catch(()=>{});
+  v.onended=()=>{hideOverlay('video‑overlay');promptOriginScan();};
+  showOverlay('video‑overlay');
+}
+
+function skipVideo(){
+  const v=document.getElementById('game‑video');
+  v.pause();
+  hideOverlay('video‑overlay');
+  if(gameState==='introVideo')promptOriginScan();
+  else if(gameState==='outroVideo')gameComplete();
+}
+
+function handleOrientationChange(e){
+  compassUpdateCount++;
+  let h=null;
+  if(e.webkitCompassHeading!==undefined)h=e.webkitCompassHeading;
+  else if(e.alpha!==null)h=360-e.alpha;
+  if(h!==null){
+    const s=GAME_CONFIG.behavior.arrowSmoothness;
+    let diff=h-deviceHeading;
+    if(diff>180)diff-=360;
+    if(diff<-180)diff+=360;
+    deviceHeading+=diff*s;
+    if(deviceHeading<0)deviceHeading+=360;
+    if(deviceHeading>=360)deviceHeading-=360;
+    if(gameState==='navigating')updateNavigationArrow();
+  }
+}
+
+function startQRScanning(){
+  if(isScanning)return;
+  isScanning=true;
+  hideStatusPanel();
+  showOverlay('scanner‑overlay');
+  resetScannerAppearance();
+  if(gameState==='scanOrigin')document.getElementById('scanner‑instruction').textContent='Scan the ORIGIN QR code';
+  else if(gameState==='scanCheckpoint'){
+    const cp=GAME_CONFIG.checkpoints[currentCheckpointIndex];
+    document.getElementById('scanner‑instruction').textContent='Scan QR for: '+cp.name;
+  }
+  scanningInterval=setInterval(scanForQRCode,GAME_CONFIG.behavior.qrScanInterval);
+}
+
+function scanForQRCode(){
+  if(!cameraActive)return;
+  const video=document.getElementById('camera‑view');
+  if(video.readyState!==video.HAVE_ENOUGH_DATA)return;
+  const canvas=document.getElementById('qr‑canvas');
+  canvas.width=video.videoWidth;
+  canvas.height=video.videoHeight;
+  const ctx=canvas.getContext('2d');
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+  const data=ctx.getImageData(0,0,canvas.width,canvas.height);
+  const qr=jsQR(data.data,data.width,data.height,{inversionAttempts:'dontInvert'});
+  if(qr&&qr.data){stopScanning();handleQRCodeDetected(qr.data);}
+}
+
+function stopScanning(){
+  isScanning=false;
+  if(scanningInterval){clearInterval(scanningInterval);scanningInterval=null;}
+}
+
+function cancelScanning(){
+  stopScanning();
+  hideOverlay('scanner‑overlay');
+  if(gameState==='scanOrigin')promptOriginScan();
+  else if(gameState==='scanCheckpoint')showStatusPanel();
+}
+
+function resetScannerAppearance(){
+  const f=document.getElementById('scanner‑frame');
+  f.style.borderColor=GAME_CONFIG.appearance.scannerFrameColor;
+  document.getElementById('scanner‑instruction').style.color='white';
+}
+
+function showScannerError(msg){
+  const f=document.getElementById('scanner‑frame');
+  f.style.borderColor=GAME_CONFIG.appearance.scannerErrorColor;
+  const i=document.getElementById('scanner‑instruction');
+  i.style.color=GAME_CONFIG.appearance.scannerErrorColor;
+  i.textContent=msg;
+}
+
+function handleQRCodeDetected(content){
+  if(gameState==='scanOrigin'){
+    if(content===GAME_CONFIG.originQR.content){
+      hideOverlay('scanner‑overlay');
+      isOriginSet=true;
+      originPoint={x:0,y:0};
+      lastGPSEstimate={x:0,y:0};
+      setTimeout(startNavigationToCheckpoint,500);
+    }else{
+      showScannerError('❌ Wrong QR! Scan ORIGIN marker');
+      setTimeout(()=>{resetScannerAppearance();startQRScanning();},GAME_CONFIG.behavior.scanErrorTimeout);
+    }
+  }else if(gameState==='scanCheckpoint'){
+    const cp=GAME_CONFIG.checkpoints[currentCheckpointIndex];
+    if(content===cp.qrCode){
+      hideOverlay('scanner‑overlay');
+      setTimeout(showQuestion,500);
+    }else{
+      showScannerError('❌ Wrong QR! Scan: '+cp.name);
+      setTimeout(()=>{resetScannerAppearance();startQRScanning();},GAME_CONFIG.behavior.scanErrorTimeout);
+    }
+  }
+}
+
+function promptOriginScan(){
+  gameState='scanOrigin';
+  showStatusPanel();
+  document.getElementById('checkpoint‑name').textContent='Welcome to HKBU Li Promenade!';
+  document.getElementById('instruction‑text').textContent='Scan the ORIGIN QR code located at the starting point.';
+  const btn=document.getElementById('main‑action‑btn');
+  btn.textContent='Scan Origin QR Code';
+  btn.onclick=startQRScanning;
+}
+
+function startNavigationToCheckpoint(){
+  if(currentCheckpointIndex>=GAME_CONFIG.checkpoints.length){
+    if(GAME_CONFIG.video.enableOutroVideo)playOutroVideo();
+    else gameComplete();
+    return;
+  }
+  gameState='navigating';
+  const cp=GAME_CONFIG.checkpoints[currentCheckpointIndex];
+  showStatusPanel();
+  document.getElementById('arrow‑container').style.display='block';
+  document.getElementById('checkpoint‑name').textContent='Navigate to: '+cp.name;
+  document.getElementById('instruction‑text').textContent='Follow the blue arrow.\nTap "I\'ve Arrived" when you reach the destination.';
+  const btn=document.getElementById('main‑action‑btn');
+  btn.textContent="I've Arrived";
+  btn.onclick=promptCheckpointScan;
+  updateNavigationArrow();
+  setInterval(()=>{if(gameState==='navigating')updateNavigationArrow();},100);
+}
+
+function updateNavigationArrow(){
+  if(gameState!=='navigating'||currentCheckpointIndex>=GAME_CONFIG.checkpoints.length)return;
+  const cp=GAME_CONFIG.checkpoints[currentCheckpointIndex];
+  
+  // Estimate distance using heading change and device motion
+  // Simplified: use step counter proxy
+  estimatedDistance=Math.sqrt(lastGPSEstimate.x*lastGPSEstimate.x+lastGPSEstimate.y*lastGPSEstimate.y)*111000; // Convert to meters
+  
+  let rot=cp.bearing-deviceHeading;
+  while(rot>180)rot-=360;
+  while(rot<-180)rot+=360;
+  
+  arrowRotationValue=rot;
+  
+  // Use requestAnimationFrame for smooth arrow rotation
+  requestAnimationFrame(()=>{
+    const arrow=document.getElementById('navigation‑arrow');
+    arrow.style.transform=`rotate(${arrowRotationValue}deg)`;
+  });
+  
+  document.getElementById('distance‑display').textContent=`~${Math.max(0, cp.distance-Math.round(estimatedDistance))}m away`;
+  document.getElementById('debug‑target').textContent=cp.bearing;
+  document.getElementById('debug‑rotation').textContent=Math.round(rot);
+  document.getElementById('debug‑distance').textContent=Math.round(estimatedDistance);
+}
+
+function promptCheckpointScan(){
+  gameState='scanCheckpoint';
+  document.getElementById('arrow‑container').style.display='none';
+  const cp=GAME_CONFIG.checkpoints[currentCheckpointIndex];
+  document.getElementById('checkpoint‑name').textContent=cp.arrivalMessage||'Great! You\'ve reached:';
+  document.getElementById('distance‑display').textContent=cp.name;
+  document.getElementById('instruction‑text').textContent='Now scan the checkpoint QR code to answer the question.';
+  const btn=document.getElementById('main‑action‑btn');
+  btn.textContent='Scan Checkpoint QR';
+  btn.onclick=startQRScanning;
+}
+
+function showQuestion(){
+  gameState='question';
+  hideStatusPanel();
+  const cp=GAME_CONFIG.checkpoints[currentCheckpointIndex];
+  document.getElementById('question‑text').textContent=cp.question;
+  const container=document.getElementById('answer‑buttons');
+  container.innerHTML='';
+  cp.answers.forEach((a,i)=>{
+    const b=document.createElement('button');
+    b.className='answer‑btn';
+    b.textContent=a;
+    b.onclick=()=>checkAnswer(i);
+    container.appendChild(b);
+  });
+  document.getElementById('feedback').textContent='';
+  document.getElementById('continue‑btn').style.display='none';
+  showOverlay('question‑overlay');
+}
+
+function checkAnswer(idx){
+  const cp=GAME_CONFIG.checkpoints[currentCheckpointIndex];
+  const fb=document.getElementById('feedback');
+  const cont=document.getElementById('continue‑btn');
+  const btns=document.querySelectorAll('.answer‑btn');
+  btns.forEach(b=>b.disabled=true);
+  if(idx===cp.correctAnswerIndex){
+    fb.textContent='✓ Correct! Well done!';
+    fb.style.background=GAME_CONFIG.behavior.correctAnswerBg;
+    fb.style.color=GAME_CONFIG.behavior.correctAnswerText;
+    fb.style.border=`2px solid ${GAME_CONFIG.behavior.correctAnswerText}`;
+    cont.style.display='block';
+    console.log('✓ Correct answer!');
+  }else{
+    let txt='✗ Incorrect. Please try again.';
+    if(cp.hint)txt+=`\n\nHint: ${cp.hint}`;
+    fb.textContent=txt;
+    fb.style.background=GAME_CONFIG.behavior.incorrectAnswerBg;
+    fb.style.color=GAME_CONFIG.behavior.incorrectAnswerText;
+    fb.style.border=`2px solid ${GAME_CONFIG.behavior.incorrectAnswerText}`;
+    setTimeout(()=>{
+      fb.textContent='';
+      fb.style.background='';
+      fb.style.color='';
+      fb.style.border='';
+      btns.forEach(b=>b.disabled=false);
+    },GAME_CONFIG.behavior.incorrectAnswerDelay);
+  }
+}
+
+function continueToNextCheckpoint(){
+  hideOverlay('question‑overlay');
+  currentCheckpointIndex++;
+  startNavigationToCheckpoint();
+}
+
+function gameComplete(){
+  gameState='complete';
+  hideAllOverlays();
+  document.getElementById('arrow‑container').style.display='none';
+  showStatusPanel();
+  document.getElementById('checkpoint‑name').textContent=GAME_CONFIG.general.completionTitle;
+  document.getElementById('instruction‑text').textContent=GAME_CONFIG.general.completionMessage;
+  const btn=document.getElementById('main‑action‑btn');
+  btn.textContent='Restart Game';
+  btn.onclick=()=>location.reload();
+}
+
+function updateDebugPanel(){
+  if(!GAME_CONFIG.behavior.showDebugPanel){
+    document.getElementById('debug‑compass').style.display='none';
+    return;
+  }
+  const panel=document.getElementById('debug‑compass');
+  if(gameState==='navigating'){
+    panel.style.display='block';
+    document.getElementById('debug‑heading').textContent=Math.round(deviceHeading);
+    document.getElementById('debug‑count').textContent=compassUpdateCount;
+    document.getElementById('debug‑gps').textContent=Math.round(estimatedDistance);
+  }else panel.style.display='none';
+}
+
+setInterval(updateDebugPanel,200);
+
+function showStatusPanel(){document.getElementById('status‑panel').classList.remove('hidden');}
+function hideStatusPanel(){document.getElementById('status‑panel').classList.add('hidden');}
+function showOverlay(id){document.getElementById(id).classList.remove('hidden');}
+function hideOverlay(id){document.getElementById(id).classList.add('hidden');}
+function hideAllOverlays(){document.querySelectorAll('.overlay').forEach(o=>{if(o.id!=='welcome‑screen')o.classList.add('hidden');});}
+
+window.addEventListener('beforeunload',()=>{
+  if(videoStream){videoStream.getTracks().forEach(t=>t.stop());}
+  stopScanning();
+});
+
+setInterval(keepCameraActive,30000); // Keep camera active every 30 seconds
+
+window.addEventListener('DOMContentLoaded',()=>{
+  applyConfiguration();
+  console.log('🎮 HKBU Li Promenade AR Game v3.1 - Camera & Arrow Fixes Applied!');
+});
+</script>
 </body>
 </html>
