@@ -36,6 +36,7 @@
             height: 100vh;
             object-fit: cover;
             z-index: 1;
+            background: #000;
         }
         
         #qr-canvas {
@@ -60,7 +61,7 @@
             display: none !important;
         }
         
-        /* ==================== NAVIGATION ARROW ==================== */
+        /* ==================== NAVIGATION ARROW (ISSUE 2 FIXED) ==================== */
         #arrow-container {
             position: fixed;
             top: 50%;
@@ -76,7 +77,8 @@
             width: 100%;
             height: 100%;
             clip-path: polygon(50% 0%, 0% 70%, 30% 70%, 30% 100%, 70% 100%, 70% 70%, 100% 70%);
-            transition: transform 0.3s ease-out;
+            /* FIXED: Removed CSS transition to prevent afterimages, added hardware acceleration */
+            will-change: transform;
         }
         
         @keyframes arrowPulse {
@@ -172,7 +174,7 @@
             cursor: pointer;
         }
         
-        /* ==================== VIDEO PLAYER (ISSUE 1 FIXED) ==================== */
+        /* ==================== VIDEO PLAYER ==================== */
         #video-overlay {
             flex-direction: column;
             background: #000;
@@ -187,7 +189,6 @@
             max-height: 650px;
         }
         
-        /* FIXED: Skip button positioned absolutely to prevent trimming */
         #video-controls {
             position: absolute;
             bottom: 40px;
@@ -208,9 +209,9 @@
             backdrop-filter: blur(5px);
         }
         
-        /* ==================== QR SCANNER (ISSUES 2 & 3 FIXED) ==================== */
+        /* ==================== QR SCANNER ==================== */
         #scanner-overlay {
-            background: transparent; /* No background - mask effect handles tinting */
+            background: transparent;
         }
         
         #scanner-container {
@@ -226,14 +227,10 @@
             top: 107px;
             left: 50%;
             transform: translateX(-50%);
-            
             border: 4px solid #00ffff;
             border-radius: 20px;
-            background: transparent; /* ISSUE 3 FIXED: Inside scanner is transparent */
-            
-            /* ISSUE 3 FIXED: Creates 80% tinted overlay outside scanner square */
+            background: transparent;
             box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.8), 0 0 16px #00ffff;
-            
             transition: border-color 0.3s ease;
             z-index: 10;
         }
@@ -257,7 +254,6 @@
             100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
         
-        /* ISSUE 2 FIXED: Instruction positioned above scanner to avoid overlap */
         #scanner-instruction {
             position: absolute;
             top: 60px;
@@ -272,7 +268,6 @@
             z-index: 11;
         }
         
-        /* ISSUE 2 FIXED: Cancel button positioned below scanner to avoid overlap */
         #cancel-scan-btn {
             position: absolute;
             bottom: 60px;
@@ -290,7 +285,7 @@
             z-index: 11;
         }
         
-        /* ==================== QUIZ PANEL (ISSUES 4 & 5 FIXED) ==================== */
+        /* ==================== QUIZ PANEL ==================== */
         #question-overlay {
             position: fixed;
             top: 0;
@@ -307,7 +302,6 @@
             height: 100%;
         }
         
-        /* ISSUE 4 FIXED: Clean panel without corner frames */
         #quiz-panel-background {
             position: absolute;
             top: 58px;
@@ -315,13 +309,11 @@
             transform: translateX(-50%);
             width: 251px;
             height: 222px;
-            
             background-image: url('quiz-panel.png');
             background-size: 100% 100%;
             background-repeat: no-repeat;
             background-color: transparent;
             image-rendering: pixelated;
-            
             z-index: 10;
         }
         
@@ -330,19 +322,15 @@
             top: 58px;
             left: 50%;
             transform: translateX(-50%);
-            
             font-size: 14px;
             text-align: left;
             width: 180px;
-            
             font-weight: bold;
             line-height: 1.4;
             color: #333;
             text-shadow: 0 1px 2px rgba(255,255,255,0.7);
-            
             margin-top: 40px;
             margin-left: 30px;
-            
             z-index: 12;
         }
         
@@ -360,25 +348,20 @@
             left: 50%;
             transform: translateX(-50%);
             pointer-events: auto;
-            
             width: 280px;
             height: 55px;
             font-size: 17px;
-            
             padding: 0;
             border: none;
             cursor: pointer;
-            
             background-image: url('button-blue.png');
             background-size: 100% 100%;
             background-repeat: no-repeat;
             background-color: transparent;
             image-rendering: pixelated;
-            
             color: #333;
             font-weight: bold;
             text-shadow: 0 1px 1px rgba(255,255,255,0.8);
-            
             display: flex;
             align-items: center;
             justify-content: center;
@@ -400,7 +383,6 @@
         .answer-btn:nth-child(3) { top: 420px; }
         .answer-btn:nth-child(4) { top: 480px; }
         
-        /* ISSUE 5 FIXED: Feedback stays until Continue button pressed */
         #feedback {
             position: absolute;
             bottom: 120px;
@@ -408,7 +390,6 @@
             transform: translateX(-50%);
             width: 90%;
             max-width: 300px;
-            
             padding: 15px;
             border-radius: 10px;
             font-size: 16px;
@@ -419,7 +400,6 @@
             z-index: 20;
         }
         
-        /* ISSUE 5 FIXED: Continue button for correct answers */
         #continue-btn {
             position: absolute;
             bottom: 50px;
@@ -475,20 +455,17 @@
     
     <!-- ================================================================= -->
     <!--                    UNITY-STYLE INSPECTOR                          -->
-    <!--                   CUSTOMIZE YOUR GAME HERE                        -->
     <!-- ================================================================= -->
     <script>
         const GAME_CONFIG = {
-            // ==================== GENERAL SETTINGS ====================
             general: {
                 gameName: "HKBU Li Promenade AR Guide",
-                welcomeTitle: "🎓 HKBU Li Promenade AR Guide",
-                welcomeMessage: "Welcome to an interactive navigation experience!\n\nYou'll explore HKBU's Li Promenade, answer questions about the university, and learn while you walk.\n\nPlease allow camera and motion sensor access when prompted.",
-                completionTitle: "🎉 Congratulations!",
+                welcomeTitle: " HKBU Li Promenade AR Guide",
+                welcomeMessage: "Welcome to an interactive navigation experience!\n\nYou'll explore HKBU's Li Promenade, answer questions about the university, and learn while you walk.\n\nPlease allow camera, motion, and location access when prompted.",
+                completionTitle: " Congratulations!",
                 completionMessage: "You have successfully completed the HKBU Li Promenade AR tour!\n\nThank you for exploring with us."
             },
             
-            // ==================== VIDEO SETTINGS ====================
             video: {
                 enableIntroVideo: true,
                 enableOutroVideo: false,
@@ -499,7 +476,6 @@
                 autoPlayVideos: true
             },
             
-            // ==================== APPEARANCE SETTINGS ====================
             appearance: {
                 arrowColor: "#00FFFF",
                 arrowSize: 120,
@@ -511,40 +487,42 @@
                 scannerErrorColor: "#FF3B30"
             },
             
-            // ==================== BEHAVIOR SETTINGS ====================
             behavior: {
                 qrScanInterval: 500,
                 scanErrorTimeout: 1500,
-                arrowSmoothness: 0.3,
+                arrowSmoothness: 0.15, // Optimized for requestAnimationFrame
                 showDistance: true,
                 showDebugPanel: true,
                 incorrectAnswerDelay: 3000,
                 correctAnswerBg: "#d4edda",
                 correctAnswerText: "#155724",
                 incorrectAnswerBg: "#f8d7da",
-                incorrectAnswerText: "#721c24"
+                incorrectAnswerText: "#721c24",
+                // GPS Navigation Settings
+                useGPS: true, // Set to false to use static bearings only
+                gpsHighAccuracy: true,
+                gpsMaxAge: 5000,
+                gpsTimeout: 10000
             },
             
-            // ==================== ORIGIN QR CODE ====================
+            // IMPORTANT: Replace these coordinates with actual GPS locations!
             originQR: {
                 content: "HKBU_LI_PROMENADE_ORIGIN",
-                displayName: "Origin Point"
+                displayName: "Origin Point",
+                lat: 22.3374, // UPDATE: Stand at origin, open iPhone Maps, get coordinates
+                lng: 114.1818  // UPDATE: Stand at origin, open iPhone Maps, get coordinates
             },
             
-            // ==================== CHECKPOINTS ====================
             checkpoints: [
                 {
                     name: "Library Steps",
                     qrCode: "HKBU_CP1",
-                    bearing: 45,
-                    distance: 30,
+                    lat: 22.3376, // UPDATE: Stand at Library Steps, get GPS coordinates
+                    lng: 114.1820, // UPDATE: Stand at Library Steps, get GPS coordinates
+                    fallbackBearing: 45,   // Used if GPS fails
+                    fallbackDistance: 30,  // Used if GPS fails
                     question: "What year was Hong Kong Baptist University founded?",
-                    answers: [
-                        "1954",
-                        "1956",
-                        "1958", 
-                        "1960"
-                    ],
+                    answers: ["1954", "1956", "1958", "1960"],
                     correctAnswerIndex: 1,
                     hint: "It was founded in the mid-1950s, two years after 1954.",
                     arrivalMessage: "Welcome to the Library Steps!"
@@ -552,15 +530,12 @@
                 {
                     name: "Student Center",
                     qrCode: "HKBU_CP2",
-                    bearing: 135,
-                    distance: 45,
+                    lat: 22.3378, // UPDATE: Stand at Student Center, get GPS coordinates
+                    lng: 114.1822, // UPDATE: Stand at Student Center, get GPS coordinates
+                    fallbackBearing: 135,
+                    fallbackDistance: 45,
                     question: "What is HKBU's educational philosophy?",
-                    answers: [
-                        "Academic Excellence Only",
-                        "Whole Person Education",
-                        "Research First",
-                        "Professional Training"
-                    ],
+                    answers: ["Academic Excellence Only", "Whole Person Education", "Research First", "Professional Training"],
                     correctAnswerIndex: 1,
                     hint: "HKBU emphasizes developing both academic knowledge and personal character.",
                     arrivalMessage: "You've reached the Student Center!"
@@ -568,15 +543,12 @@
                 {
                     name: "Academic Building",
                     qrCode: "HKBU_CP3", 
-                    bearing: 270,
-                    distance: 35,
+                    lat: 22.3380, // UPDATE: Stand at Academic Building, get GPS coordinates
+                    lng: 114.1815, // UPDATE: Stand at Academic Building, get GPS coordinates
+                    fallbackBearing: 270,
+                    fallbackDistance: 35,
                     question: "Which school is HKBU particularly well-known for?",
-                    answers: [
-                        "School of Medicine",
-                        "School of Communication",
-                        "School of Law",
-                        "School of Agriculture"
-                    ],
+                    answers: ["School of Medicine", "School of Communication", "School of Law", "School of Agriculture"],
                     correctAnswerIndex: 1,
                     hint: "HKBU has a strong reputation in media and journalism programs.",
                     arrivalMessage: "Welcome to the Academic Building!"
@@ -584,8 +556,6 @@
             ]
         };
     </script>
-    <!-- ================================================================= -->
-    
     
     <!-- Camera Stream Background -->
     <video id="camera-view" autoplay muted playsinline></video>
@@ -632,34 +602,25 @@
         </div>
     </div>
     
-    <!-- Question Overlay (Corner frames removed) -->
+    <!-- Question Overlay -->
     <div id="question-overlay" class="overlay hidden">
         <div id="question-container">
-            <!-- Quiz Panel Background (no corner frames) -->
             <div id="quiz-panel-background"></div>
-            
-            <!-- Question Text -->
             <h2 id="question-text"></h2>
-            
-            <!-- Answer Buttons -->
             <div id="answer-buttons"></div>
-            
-            <!-- Feedback Message -->
             <div id="feedback"></div>
-            
-            <!-- Continue Button -->
-            <button id="continue-btn" onclick="continueToNextCheckpoint()">Continue ▶</button>
+            <button id="continue-btn" onclick="continueToNextCheckpoint()">Continue</button>
         </div>
     </div>
     
     <!-- Debug Panel -->
     <div id="debug-compass">
-        <div>🧭 Compass Debug</div>
+        <div> Navigation Debug</div>
         <div>Heading: <span id="debug-heading">0</span>°</div>
-        <div>Updates: <span id="debug-count">0</span></div>
-        <div>State: <span id="debug-state">-</span></div>
-        <div>Target: <span id="debug-target">-</span>°</div>
-        <div>Rotation: <span id="debug-rotation">0</span>°</div>
+        <div>GPS Dist: <span id="debug-dist">-</span>m</div>
+        <div>Target Brg: <span id="debug-target">-</span>°</div>
+        <div>Arrow Rot: <span id="debug-rotation">0</span>°</div>
+        <div>GPS Status: <span id="debug-gps">off</span></div>
     </div>
 
     <script>
@@ -669,18 +630,181 @@
         let gameState = 'welcome';
         let currentCheckpointIndex = 0;
         let deviceHeading = 0;
+        let smoothedHeading = 0; // For smooth rendering
         let isOriginSet = false;
         let videoStream = null;
         let scanningInterval = null;
         let isScanning = false;
-        let compassUpdateCount = 0;
+        let animationFrameId = null;
         
+        // GPS Navigation State (ISSUE 3 SOLUTION)
+        let currentLat = null;
+        let currentLng = null;
+        let watchPositionId = null;
+        let currentDistance = 0;
+        let currentBearing = 0;
+        let hasGPSSignal = false;
+
+        // ============================================
+        // GPS HELPER FUNCTIONS (ISSUE 3 SOLUTION)
+        // ============================================
+        
+        // Haversine formula for accurate distance calculation
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371000; // Earth radius in meters
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        // Calculate bearing from current position to target
+        function calculateBearing(lat1, lon1, lat2, lon2) {
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const λ1 = lon1 * Math.PI / 180;
+            const λ2 = lon2 * Math.PI / 180;
+
+            const y = Math.sin(λ2 - λ1) * Math.cos(φ2);
+            const x = Math.cos(φ1) * Math.sin(φ2) -
+                      Math.sin(φ1) * Math.cos(φ2) * Math.cos(λ2 - λ1);
+            const θ = Math.atan2(y, x);
+            return (θ * 180 / Math.PI + 360) % 360;
+        }
+
+        function startGPSTracking() {
+            if (!GAME_CONFIG.behavior.useGPS || !navigator.geolocation) {
+                console.log('GPS disabled or unavailable, using fallback navigation');
+                return;
+            }
+
+            watchPositionId = navigator.geolocation.watchPosition(
+                (position) => {
+                    hasGPSSignal = true;
+                    currentLat = position.coords.latitude;
+                    currentLng = position.coords.longitude;
+                    
+                    // Update navigation if we're currently navigating
+                    if (gameState === 'navigating' && currentCheckpointIndex < GAME_CONFIG.checkpoints.length) {
+                        const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
+                        currentDistance = Math.round(calculateDistance(currentLat, currentLng, checkpoint.lat, checkpoint.lng));
+                        currentBearing = calculateBearing(currentLat, currentLng, checkpoint.lat, checkpoint.lng);
+                        
+                        // Update distance display
+                        if (GAME_CONFIG.behavior.showDistance) {
+                            document.getElementById('distance-display').textContent = `${currentDistance}m away`;
+                        }
+                    }
+                    
+                    document.getElementById('debug-gps').textContent = 'active';
+                },
+                (error) => {
+                    console.warn('GPS Error:', error.message);
+                    hasGPSSignal = false;
+                    document.getElementById('debug-gps').textContent = 'error';
+                },
+                {
+                    enableHighAccuracy: GAME_CONFIG.behavior.gpsHighAccuracy,
+                    maximumAge: GAME_CONFIG.behavior.gpsMaxAge,
+                    timeout: GAME_CONFIG.behavior.gpsTimeout
+                }
+            );
+        }
+
+        function stopGPSTracking() {
+            if (watchPositionId && navigator.geolocation) {
+                navigator.geolocation.clearWatch(watchPositionId);
+                watchPositionId = null;
+                hasGPSSignal = false;
+            }
+        }
+        
+        // ============================================
+        // CAMERA LIFECYCLE MANAGEMENT (ISSUE 1 SOLUTION)
+        // ============================================
+        
+        async function startCameraStream() {
+            try {
+                // Stop existing stream if present
+                if (videoStream) {
+                    videoStream.getTracks().forEach(track => track.stop());
+                    videoStream = null;
+                }
+
+                // Request new camera stream
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+
+                const videoElement = document.getElementById('camera-view');
+                videoElement.srcObject = videoStream;
+
+                // Wait for video to load
+                await new Promise((resolve) => {
+                    videoElement.onloadedmetadata = () => {
+                        videoElement.play().catch(e => console.log('Video play prevented:', e));
+                        resolve();
+                    };
+                });
+
+                console.log('✅ Camera stream started successfully');
+            } catch (error) {
+                console.error('❌ Camera start error:', error);
+                alert('Unable to access camera. Please check permissions and try again.');
+            }
+        }
+
+        function stopCameraStream() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => {
+                    track.stop();
+                    console.log('🔴 Camera track stopped');
+                });
+                videoStream = null;
+            }
+        }
+
+        // ISSUE 1 SOLUTION: Handle iOS Safari camera blackout recovery
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'visible') {
+                console.log('📱 App resumed, restarting camera...');
+                if (gameState !== 'welcome') {
+                    await startCameraStream();
+                    // Re-bind orientation listeners (iOS sometimes drops them)
+                    window.addEventListener('deviceorientation', handleOrientationChange, true);
+                    window.addEventListener('deviceorientationabsolute', handleOrientationChange, true);
+                }
+            } else {
+                console.log('📱 App backgrounded, stopping camera to save battery');
+                stopCameraStream();
+            }
+        });
+
+        // Additional iOS Safari recovery
+        window.addEventListener('pageshow', async (event) => {
+            if (event.persisted || document.visibilityState === 'visible') {
+                console.log('📱 Page restored from cache, restarting camera...');
+                if (gameState !== 'welcome') {
+                    await startCameraStream();
+                }
+            }
+        });
+
         // ============================================
         // INITIALIZATION AND CONFIGURATION
         // ============================================
         function applyConfiguration() {
             const config = GAME_CONFIG;
-            
             const arrow = document.getElementById('navigation-arrow');
             const arrowContainer = document.getElementById('arrow-container');
             
@@ -709,47 +833,30 @@
             if (!config.video.showSkipButton) {
                 document.getElementById('skip-video-btn').style.display = 'none';
             }
-            
-            console.log('✓ Configuration applied successfully');
         }
         
-        // ============================================
-        // GAME INITIALIZATION
-        // ============================================
         async function startGame() {
-            console.log('🎮 Starting game...');
-            
             try {
+                // Request iOS compass permission
                 if (typeof DeviceOrientationEvent !== 'undefined' && 
                     typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    
                     const permission = await DeviceOrientationEvent.requestPermission();
-                    
                     if (permission !== 'granted') {
                         alert('🧭 Compass permission is REQUIRED for navigation!');
                         return;
                     }
                 }
                 
+                // Bind compass event listeners
                 window.addEventListener('deviceorientation', handleOrientationChange, true);
                 window.addEventListener('deviceorientationabsolute', handleOrientationChange, true);
                 
-                videoStream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: 'environment',
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                });
+                // Start camera and GPS
+                await startCameraStream();
+                startGPSTracking();
                 
-                const videoElement = document.getElementById('camera-view');
-                videoElement.srcObject = videoStream;
-                
-                await new Promise((resolve) => {
-                    videoElement.onloadedmetadata = resolve;
-                });
-                
-                console.log('✓ All permissions granted');
+                // Start smooth render loop (ISSUE 2 SOLUTION)
+                startRenderLoop();
                 
                 hideOverlay('welcome-screen');
                 
@@ -760,7 +867,7 @@
                 }
                 
             } catch (error) {
-                console.error('❌ Startup error:', error);
+                console.error('Startup error:', error);
                 alert('Unable to start game. Please allow camera and motion permissions.');
             }
         }
@@ -770,24 +877,17 @@
         // ============================================
         function playIntroVideo() {
             gameState = 'introVideo';
-            
             const videoElement = document.getElementById('game-video');
             const videoSource = document.getElementById('video-source');
-            
             videoSource.src = GAME_CONFIG.video.introVideoPath;
             videoElement.load();
-            
             if (GAME_CONFIG.video.autoPlayVideos) {
-                videoElement.play().catch(err => {
-                    console.log('Autoplay prevented');
-                });
+                videoElement.play().catch(err => console.log('Autoplay prevented'));
             }
-            
             videoElement.onended = () => {
                 hideOverlay('video-overlay');
                 promptOriginScan();
             };
-            
             showOverlay('video-overlay');
         }
         
@@ -795,63 +895,101 @@
             const videoElement = document.getElementById('game-video');
             videoElement.pause();
             hideOverlay('video-overlay');
-            
-            if (gameState === 'introVideo') {
-                promptOriginScan();
-            } else if (gameState === 'outroVideo') {
-                gameComplete();
-            }
+            if (gameState === 'introVideo') promptOriginScan();
+            else if (gameState === 'outroVideo') gameComplete();
         }
         
         // ============================================
-        // COMPASS HANDLING
+        // COMPASS & SMOOTH RENDER LOOP (ISSUE 2 SOLUTION)
         // ============================================
+        
         function handleOrientationChange(event) {
-            compassUpdateCount++;
             let newHeading = null;
             
             if (event.webkitCompassHeading !== undefined) {
+                // iOS Safari (0° = North, clockwise)
                 newHeading = event.webkitCompassHeading;
-            } 
-            else if (event.alpha !== null) {
-                if (event.absolute) {
-                    newHeading = 360 - event.alpha;
-                } else {
-                    newHeading = 360 - event.alpha;
-                }
+            } else if (event.alpha !== null) {
+                // Standard web (0° = North, counterclockwise from North)
+                newHeading = 360 - event.alpha;
             }
             
             if (newHeading !== null) {
-                const smoothingFactor = GAME_CONFIG.behavior.arrowSmoothness;
-                let diff = newHeading - deviceHeading;
+                deviceHeading = newHeading;
+            }
+        }
+
+        // ISSUE 2 SOLUTION: Smooth render loop using requestAnimationFrame
+        function startRenderLoop() {
+            function render() {
+                // Smooth heading interpolation to prevent jitter
+                let headingDiff = deviceHeading - smoothedHeading;
                 
-                if (diff > 180) diff -= 360;
-                if (diff < -180) diff += 360;
+                // Handle 360° wraparound
+                if (headingDiff > 180) headingDiff -= 360;
+                if (headingDiff < -180) headingDiff += 360;
                 
-                deviceHeading += diff * smoothingFactor;
+                // Apply smoothing
+                smoothedHeading += headingDiff * GAME_CONFIG.behavior.arrowSmoothness;
                 
-                if (deviceHeading < 0) deviceHeading += 360;
-                if (deviceHeading >= 360) deviceHeading -= 360;
-                
-                if (gameState === 'navigating') {
+                // Normalize to 0-360°
+                if (smoothedHeading < 0) smoothedHeading += 360;
+                if (smoothedHeading >= 360) smoothedHeading -= 360;
+
+                // Update navigation arrow if we're navigating
+                if (gameState === 'navigating' && currentCheckpointIndex < GAME_CONFIG.checkpoints.length) {
                     updateNavigationArrow();
                 }
+                
+                // Continue render loop
+                animationFrameId = requestAnimationFrame(render);
+            }
+            
+            render();
+        }
+
+        function updateNavigationArrow() {
+            const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
+            
+            // ISSUE 3 SOLUTION: Use GPS bearing if available, otherwise fallback to static bearing
+            let targetBearing;
+            if (hasGPSSignal && GAME_CONFIG.behavior.useGPS) {
+                targetBearing = currentBearing;
+            } else {
+                targetBearing = checkpoint.fallbackBearing;
+            }
+            
+            // Calculate arrow rotation
+            let rotation = targetBearing - smoothedHeading;
+            
+            // Normalize rotation to ±180°
+            while (rotation > 180) rotation -= 360;
+            while (rotation < -180) rotation += 360;
+            
+            // Apply rotation to arrow (synced with display refresh rate)
+            const arrow = document.getElementById('navigation-arrow');
+            arrow.style.transform = `rotate(${rotation}deg)`;
+            
+            // Update debug display
+            updateDebugDisplay(targetBearing, rotation);
+        }
+
+        function updateDebugDisplay(targetBearing, rotation) {
+            if (GAME_CONFIG.behavior.showDebugPanel) {
+                document.getElementById('debug-heading').textContent = Math.round(smoothedHeading);
+                document.getElementById('debug-target').textContent = Math.round(targetBearing);
+                document.getElementById('debug-rotation').textContent = Math.round(rotation);
+                document.getElementById('debug-dist').textContent = hasGPSSignal ? currentDistance : '-';
             }
         }
         
         // ============================================
-        // QR SCANNING SYSTEM (ISSUE 2 FIXED)
+        // QR SCANNING SYSTEM
         // ============================================
         function startQRScanning() {
-            if (isScanning) {
-                return;
-            }
-            
+            if (isScanning) return;
             isScanning = true;
-            
-            // ISSUE 2 FIXED: Hide status panel to prevent overlap
             hideStatusPanel();
-            
             showOverlay('scanner-overlay');
             resetScannerAppearance();
             
@@ -861,7 +999,6 @@
                 const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
                 document.getElementById('scanner-instruction').textContent = `Scan QR for: ${checkpoint.name}`;
             }
-            
             scanningInterval = setInterval(scanForQRCode, GAME_CONFIG.behavior.qrScanInterval);
         }
         
@@ -870,19 +1007,16 @@
             const canvas = document.getElementById('qr-canvas');
             const context = canvas.getContext('2d');
             
-            if (video.readyState !== video.HAVE_ENOUGH_DATA) {
-                return;
-            }
+            if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) return;
             
             try {
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
-                
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
                 
                 const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                const qrCode = jsQR(imageData.data, imageData.width, imageData.height, {
-                    inversionAttempts: "dontInvert"
+                const qrCode = jsQR(imageData.data, imageData.width, imageData.height, { 
+                    inversionAttempts: "dontInvert" 
                 });
                 
                 if (qrCode && qrCode.data) {
@@ -896,7 +1030,6 @@
         
         function stopScanning() {
             isScanning = false;
-            
             if (scanningInterval) {
                 clearInterval(scanningInterval);
                 scanningInterval = null;
@@ -906,19 +1039,13 @@
         function cancelScanning() {
             stopScanning();
             hideOverlay('scanner-overlay');
-            
-            // ISSUE 2 FIXED: Restore status panel when canceling
-            if (gameState === 'scanOrigin') {
-                promptOriginScan();
-            } else if (gameState === 'scanCheckpoint') {
-                showStatusPanel();
-            }
+            if (gameState === 'scanOrigin') promptOriginScan();
+            else if (gameState === 'scanCheckpoint') showStatusPanel();
         }
         
         function resetScannerAppearance() {
             const frame = document.getElementById('scanner-frame');
             const instruction = document.getElementById('scanner-instruction');
-            
             frame.style.borderColor = GAME_CONFIG.appearance.scannerFrameColor;
             instruction.style.color = 'white';
         }
@@ -926,7 +1053,6 @@
         function showScannerError(message) {
             const frame = document.getElementById('scanner-frame');
             const instruction = document.getElementById('scanner-instruction');
-            
             frame.style.borderColor = GAME_CONFIG.appearance.scannerErrorColor;
             instruction.style.color = GAME_CONFIG.appearance.scannerErrorColor;
             instruction.textContent = message;
@@ -937,33 +1063,24 @@
                 if (qrContent === GAME_CONFIG.originQR.content) {
                     hideOverlay('scanner-overlay');
                     isOriginSet = true;
-                    
-                    setTimeout(() => {
-                        startNavigationToCheckpoint();
-                    }, 500);
+                    setTimeout(() => startNavigationToCheckpoint(), 500);
                 } else {
                     showScannerError('❌ Wrong QR! Scan ORIGIN marker');
-                    
-                    setTimeout(() => {
-                        resetScannerAppearance();
-                        startQRScanning();
+                    setTimeout(() => { 
+                        resetScannerAppearance(); 
+                        startQRScanning(); 
                     }, GAME_CONFIG.behavior.scanErrorTimeout);
                 }
             } else if (gameState === 'scanCheckpoint') {
                 const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-                
                 if (qrContent === checkpoint.qrCode) {
                     hideOverlay('scanner-overlay');
-                    
-                    setTimeout(() => {
-                        showQuestion();
-                    }, 500);
+                    setTimeout(() => showQuestion(), 500);
                 } else {
                     showScannerError(`❌ Wrong QR! Scan: ${checkpoint.name}`);
-                    
-                    setTimeout(() => {
-                        resetScannerAppearance();
-                        startQRScanning();
+                    setTimeout(() => { 
+                        resetScannerAppearance(); 
+                        startQRScanning(); 
                     }, GAME_CONFIG.behavior.scanErrorTimeout);
                 }
             }
@@ -974,7 +1091,6 @@
         // ============================================
         function promptOriginScan() {
             gameState = 'scanOrigin';
-            
             showStatusPanel();
             document.getElementById('checkpoint-name').textContent = 'Welcome to HKBU Li Promenade!';
             document.getElementById('distance-display').textContent = '';
@@ -987,11 +1103,7 @@
         
         function startNavigationToCheckpoint() {
             if (currentCheckpointIndex >= GAME_CONFIG.checkpoints.length) {
-                if (GAME_CONFIG.video.enableOutroVideo) {
-                    playOutroVideo();
-                } else {
-                    gameComplete();
-                }
+                gameComplete();
                 return;
             }
             
@@ -1000,54 +1112,35 @@
             
             showStatusPanel();
             document.getElementById('arrow-container').style.display = 'block';
-            
             document.getElementById('checkpoint-name').textContent = `Navigate to: ${checkpoint.name}`;
             
+            // Initialize distance display
             if (GAME_CONFIG.behavior.showDistance) {
-                document.getElementById('distance-display').textContent = `~${checkpoint.distance}m away`;
-            } else {
-                document.getElementById('distance-display').textContent = '';
+                if (hasGPSSignal) {
+                    document.getElementById('distance-display').textContent = `${currentDistance}m away`;
+                } else {
+                    document.getElementById('distance-display').textContent = `~${checkpoint.fallbackDistance}m away`;
+                }
             }
             
-            document.getElementById('instruction-text').textContent = `Follow the blue arrow to reach your destination.\n\nWhen you arrive, tap "I've Arrived".`;
+            document.getElementById('instruction-text').textContent = 
+                `Follow the blue arrow to reach your destination.\n\nWhen you arrive, tap "I've Arrived".`;
             
             const btn = document.getElementById('main-action-btn');
             btn.textContent = "I've Arrived";
             btn.onclick = promptCheckpointScan;
-            
-            updateNavigationArrow();
-        }
-        
-        function updateNavigationArrow() {
-            if (gameState !== 'navigating' || currentCheckpointIndex >= GAME_CONFIG.checkpoints.length) {
-                return;
-            }
-            
-            const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-            const targetBearing = checkpoint.bearing;
-            
-            let rotation = targetBearing - deviceHeading;
-            
-            while (rotation > 180) rotation -= 360;
-            while (rotation < -180) rotation += 360;
-            
-            const arrow = document.getElementById('navigation-arrow');
-            arrow.style.transform = `rotate(${rotation}deg)`;
-            
-            document.getElementById('debug-target').textContent = targetBearing;
-            document.getElementById('debug-rotation').textContent = Math.round(rotation);
         }
         
         function promptCheckpointScan() {
             gameState = 'scanCheckpoint';
-            
             document.getElementById('arrow-container').style.display = 'none';
-            
             const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
             
-            document.getElementById('checkpoint-name').textContent = checkpoint.arrivalMessage || `Great! You've reached:`;
+            document.getElementById('checkpoint-name').textContent = 
+                checkpoint.arrivalMessage || `Great! You've reached:`;
             document.getElementById('distance-display').textContent = checkpoint.name;
-            document.getElementById('instruction-text').textContent = 'Now scan the checkpoint QR code to answer the question.';
+            document.getElementById('instruction-text').textContent = 
+                'Now scan the checkpoint QR code to answer the question.';
             
             const btn = document.getElementById('main-action-btn');
             btn.textContent = 'Scan Checkpoint QR';
@@ -1055,16 +1148,14 @@
         }
         
         // ============================================
-        // QUESTION SYSTEM (ISSUE 5 FIXED)
+        // QUESTION SYSTEM
         // ============================================
         function showQuestion() {
             gameState = 'question';
             hideStatusPanel();
-            
             const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
             
             document.getElementById('question-text').textContent = checkpoint.question;
-            
             const buttonContainer = document.getElementById('answer-buttons');
             buttonContainer.innerHTML = '';
             
@@ -1076,13 +1167,10 @@
                 buttonContainer.appendChild(button);
             });
             
-            // Reset feedback and hide continue button
             const feedback = document.getElementById('feedback');
             feedback.textContent = '';
             feedback.style.background = '';
-            feedback.style.color = '';
             feedback.style.border = '';
-            
             document.getElementById('continue-btn').style.display = 'none';
             
             showOverlay('question-overlay');
@@ -1097,40 +1185,29 @@
             buttons.forEach(btn => btn.disabled = true);
             
             if (answerIndex === checkpoint.correctAnswerIndex) {
-                // ISSUE 5 FIXED: Show feedback that stays until Continue pressed
-                feedback.textContent = '✓ Correct! Well done!';
+                feedback.textContent = '✅ Correct! Well done!';
                 feedback.style.background = GAME_CONFIG.behavior.correctAnswerBg;
                 feedback.style.color = GAME_CONFIG.behavior.correctAnswerText;
                 feedback.style.border = `2px solid ${GAME_CONFIG.behavior.correctAnswerText}`;
-                
-                // Show Continue button instead of auto-proceeding
                 continueBtn.style.display = 'block';
-                
-                console.log('✓ Correct answer! Waiting for Continue button...');
-                
             } else {
-                let feedbackText = '✗ Incorrect. Please try again.';
-                if (checkpoint.hint) {
-                    feedbackText += `\n\nHint: ${checkpoint.hint}`;
-                }
+                let feedbackText = '❌ Incorrect. Please try again.';
+                if (checkpoint.hint) feedbackText += `\n\nHint: ${checkpoint.hint}`;
                 
                 feedback.textContent = feedbackText;
                 feedback.style.background = GAME_CONFIG.behavior.incorrectAnswerBg;
                 feedback.style.color = GAME_CONFIG.behavior.incorrectAnswerText;
                 feedback.style.border = `2px solid ${GAME_CONFIG.behavior.incorrectAnswerText}`;
                 
-                // Auto-clear incorrect feedback after delay
                 setTimeout(() => {
                     feedback.textContent = '';
                     feedback.style.background = '';
-                    feedback.style.color = '';
                     feedback.style.border = '';
                     buttons.forEach(btn => btn.disabled = false);
                 }, GAME_CONFIG.behavior.incorrectAnswerDelay);
             }
         }
         
-        // ISSUE 5 FIXED: New function for Continue button
         function continueToNextCheckpoint() {
             hideOverlay('question-overlay');
             currentCheckpointIndex++;
@@ -1158,47 +1235,38 @@
         // ============================================
         // DEBUG PANEL
         // ============================================
-        function updateDebugPanel() {
-            if (!GAME_CONFIG.behavior.showDebugPanel) {
-                document.getElementById('debug-compass').style.display = 'none';
-                return;
-            }
-            
+        function updateDebugPanelVisibility() {
             const debugPanel = document.getElementById('debug-compass');
-            if (gameState === 'navigating' && debugPanel) {
+            if (GAME_CONFIG.behavior.showDebugPanel && gameState === 'navigating') {
                 debugPanel.style.display = 'block';
-                document.getElementById('debug-heading').textContent = Math.round(deviceHeading);
-                document.getElementById('debug-count').textContent = compassUpdateCount;
-                document.getElementById('debug-state').textContent = gameState;
-            } else if (debugPanel) {
+            } else {
                 debugPanel.style.display = 'none';
             }
         }
         
-        setInterval(updateDebugPanel, 200);
+        setInterval(updateDebugPanelVisibility, 1000);
         
         // ============================================
         // UI HELPER FUNCTIONS
         // ============================================
-        function showStatusPanel() {
-            document.getElementById('status-panel').classList.remove('hidden');
+        function showStatusPanel() { 
+            document.getElementById('status-panel').classList.remove('hidden'); 
         }
         
-        function hideStatusPanel() {
-            document.getElementById('status-panel').classList.add('hidden');
+        function hideStatusPanel() { 
+            document.getElementById('status-panel').classList.add('hidden'); 
         }
         
-        function showOverlay(overlayId) {
-            document.getElementById(overlayId).classList.remove('hidden');
+        function showOverlay(overlayId) { 
+            document.getElementById(overlayId).classList.remove('hidden'); 
         }
         
-        function hideOverlay(overlayId) {
-            document.getElementById(overlayId).classList.add('hidden');
+        function hideOverlay(overlayId) { 
+            document.getElementById(overlayId).classList.add('hidden'); 
         }
         
         function hideAllOverlays() {
-            const overlays = document.querySelectorAll('.overlay');
-            overlays.forEach(overlay => {
+            document.querySelectorAll('.overlay').forEach(overlay => {
                 if (overlay.id !== 'welcome-screen') {
                     overlay.classList.add('hidden');
                 }
@@ -1206,21 +1274,21 @@
         }
         
         // ============================================
-        // CLEANUP
+        // CLEANUP & INITIALIZATION
         // ============================================
         window.addEventListener('beforeunload', () => {
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-            }
+            stopCameraStream();
             stopScanning();
+            stopGPSTracking();
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
         });
         
-        // ============================================
-        // INITIALIZE
-        // ============================================
         window.addEventListener('DOMContentLoaded', () => {
             applyConfiguration();
-            console.log('🎮 HKBU Li Promenade AR Game v3.0 - All Issues Fixed!');
+            console.log('🚀 HKBU Li Promenade AR Game v4.0 - All Issues Fixed!');
+            console.log('📍 GPS Navigation:', GAME_CONFIG.behavior.useGPS ? 'ENABLED' : 'DISABLED');
         });
     </script>
 </body>
