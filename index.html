@@ -577,75 +577,7 @@
                 }
             ]
         };
-    </script>
-    
-    <!-- Camera Stream Background -->
-    <video id="camera-view" autoplay muted playsinline></video>
-    <canvas id="qr-canvas"></canvas>
-    
-    <!-- Navigation Arrow -->
-    <div id="arrow-container">
-        <div id="navigation-arrow"></div>
-    </div>
-    
-    <!-- Status Panel -->
-    <div id="status-panel" class="hidden">
-        <div id="checkpoint-name"></div>
-        <div id="distance-display"></div>
-        <div id="instruction-text"></div>
-        <button id="main-action-btn"></button>
-    </div>
-    
-    <!-- Welcome Screen -->
-    <div id="welcome-screen" class="overlay">
-        <div>
-            <h1 id="welcome-title"></h1>
-            <p id="welcome-message"></p>
-            <button id="start-game-btn" onclick="startGame()">開始我們的旅程！</button>
-        </div>
-    </div>
-    
-    <!-- Video Player -->
-    <div id="video-overlay" class="overlay hidden">
-        <video id="game-video" controls playsinline>
-            <source id="video-source" src="" type="video/mp4">
-        </video>
-        <div id="video-controls">
-            <button id="skip-video-btn" onclick="skipVideo()"></button>
-        </div>
-    </div>
-    
-    <!-- QR Scanner Overlay -->
-    <div id="scanner-overlay" class="overlay hidden">
-        <div id="scanner-container">
-            <div id="scanner-frame"></div>
-            <p id="scanner-instruction"></p>
-            <button id="cancel-scan-btn" onclick="cancelScanning()">取消</button>
-        </div>
-    </div>
-    
-    <!-- Question Overlay -->
-    <div id="question-overlay" class="overlay hidden">
-        <div id="question-container">
-            <div id="quiz-panel-background"></div>
-            <h2 id="question-text"></h2>
-            <div id="answer-buttons"></div>
-            <div id="feedback"></div>
-            <button id="continue-btn" onclick="continueToNextCheckpoint()">繼續 ▶</button>
-        </div>
-    </div>
-    
-    <!-- Debug Panel -->
-    <div id="debug-compass">
-        <div>🧭 導航除錯</div>
-        <div>方向角: <span id="debug-heading">0</span>°</div>
-        <div>GPS距離: <span id="debug-dist">-</span>m</div>
-        <div>目標方位: <span id="debug-target">-</span>°</div>
-        <div>箭頭旋轉: <span id="debug-rotation">0</span>°</div>
-        <div>GPS狀態: <span id="debug-gps">關閉</span></div>
-    </div>
 
-    <script>
         // ============================================
         // 遊戲狀態變數
         // ============================================
@@ -1256,7 +1188,7 @@
         }
         
         function hideOverlay(overlayId) { 
-            document.getElementById(overlayId').classList.add('hidden'); 
+            document.getElementById(overlayId).classList.add('hidden'); // 修正：移除了多餘的引號
         }
         
         function hideAllOverlays() {
@@ -1285,5 +1217,71 @@
             console.log('📍 GPS 導航:', GAME_CONFIG.behavior.useGPS ? '已啟用' : '已停用');
         });
     </script>
+
+    <!-- Camera Stream Background -->
+    <video id="camera-view" autoplay muted playsinline></video>
+    <canvas id="qr-canvas"></canvas>
+    
+    <!-- Navigation Arrow -->
+    <div id="arrow-container">
+        <div id="navigation-arrow"></div>
+    </div>
+    
+    <!-- Status Panel -->
+    <div id="status-panel" class="hidden">
+        <div id="checkpoint-name"></div>
+        <div id="distance-display"></div>
+        <div id="instruction-text"></div>
+        <button id="main-action-btn"></button>
+    </div>
+    
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" class="overlay">
+        <div>
+            <h1 id="welcome-title"></h1>
+            <p id="welcome-message"></p>
+            <button id="start-game-btn" onclick="startGame()">開始我們的旅程！</button>
+        </div>
+    </div>
+    
+    <!-- Video Player -->
+    <div id="video-overlay" class="overlay hidden">
+        <video id="game-video" controls playsinline>
+            <source id="video-source" src="" type="video/mp4">
+        </video>
+        <div id="video-controls">
+            <button id="skip-video-btn" onclick="skipVideo()"></button>
+        </div>
+    </div>
+    
+    <!-- QR Scanner Overlay -->
+    <div id="scanner-overlay" class="overlay hidden">
+        <div id="scanner-container">
+            <div id="scanner-frame"></div>
+            <p id="scanner-instruction"></p>
+            <button id="cancel-scan-btn" onclick="cancelScanning()">取消</button>
+        </div>
+    </div>
+    
+    <!-- Question Overlay -->
+    <div id="question-overlay" class="overlay hidden">
+        <div id="question-container">
+            <div id="quiz-panel-background"></div>
+            <h2 id="question-text"></h2>
+            <div id="answer-buttons"></div>
+            <div id="feedback"></div>
+            <button id="continue-btn" onclick="continueToNextCheckpoint()">繼續 ▶</button>
+        </div>
+    </div>
+    
+    <!-- Debug Panel -->
+    <div id="debug-compass">
+        <div>🧭 導航除錯</div>
+        <div>方向角: <span id="debug-heading">0</span>°</div>
+        <div>GPS距離: <span id="debug-dist">-</span>m</div>
+        <div>目標方位: <span id="debug-target">-</span>°</div>
+        <div>箭頭旋轉: <span id="debug-rotation">0</span>°</div>
+        <div>GPS狀態: <span id="debug-gps">關閉</span></div>
+    </div>
 </body>
 </html>
