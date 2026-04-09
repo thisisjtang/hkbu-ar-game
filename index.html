@@ -286,7 +286,7 @@
             z-index: 11;
         }
         
-        /* ==================== QUIZ PANEL ==================== */
+        /* ==================== AR QUIZ PANEL (完全重新設計) ==================== */
         #question-overlay {
             position: fixed;
             top: 0;
@@ -294,13 +294,31 @@
             width: 100vw;
             height: 100vh;
             z-index: 100;
-            background: rgba(0, 0, 0, 0.95);
+            /* 🚀 關鍵改動：完全透明背景，讓相機畫面完全透出 */
+            background: transparent;
+        }
+
+        /* 🎯 智能背景遮罩：只在需要的地方添加輕微暗化 */
+        #question-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* 輕微暗化提升文字可讀性，同時保持 AR 沉浸感 */
+            background: rgba(0, 0, 0, 0.25);
+            /* 添加背景模糊效果，營造專業 AR 介面感 */
+            backdrop-filter: blur(4px);
+            z-index: 1;
         }
         
         #question-container {
             position: relative;
             width: 100%;
             height: 100%;
+            /* 確保內容浮在遮罩層上方 */
+            z-index: 2;
         }
         
         #quiz-panel-background {
@@ -316,6 +334,9 @@
             background-color: transparent;
             image-rendering: pixelated;
             z-index: 10;
+            /* 🎨 增強 AR 立體感：添加陰影和輕微發光效果 */
+            filter: drop-shadow(0 8px 25px rgba(0,0,0,0.4)) 
+                   drop-shadow(0 0 10px rgba(0,255,255,0.1));
         }
         
         #question-text {
@@ -369,6 +390,9 @@
             text-align: center;
             transition: transform 0.2s ease;
             line-height: 1.3;
+            /* 🎨 按鈕也加入 AR 立體效果 */
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3))
+                   drop-shadow(0 0 5px rgba(0,255,255,0.05));
         }
         
         .answer-btn:active {
@@ -401,6 +425,9 @@
             line-height: 1.6;
             text-align: center;
             z-index: 20;
+            /* 🎨 回饋訊息也採用 AR 風格 */
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
         
         #continue-btn {
@@ -421,6 +448,8 @@
             z-index: 21;
             display: none;
             transition: all 0.3s ease;
+            /* 🎨 繼續按鈕的 AR 效果 */
+            backdrop-filter: blur(5px);
         }
         
         #continue-btn:active {
@@ -442,6 +471,8 @@
             display: none;
             border: 2px solid #00FF00;
             min-width: 200px;
+            /* 除錯面板也加入背景模糊 */
+            backdrop-filter: blur(10px);
         }
         
         #debug-compass div {
@@ -501,9 +532,9 @@
                 showDistance: true,
                 showDebugPanel: true,
                 incorrectAnswerDelay: 4000, // 增加中文閱讀時間
-                correctAnswerBg: "#d4edda",
+                correctAnswerBg: "rgba(212, 237, 218, 0.9)", // 調整透明度以配合 AR 效果
                 correctAnswerText: "#155724",
-                incorrectAnswerBg: "#f8d7da",
+                incorrectAnswerBg: "rgba(248, 215, 218, 0.9)", // 調整透明度以配合 AR 效果
                 incorrectAnswerText: "#721c24",
                 useGPS: true,
                 gpsHighAccuracy: true,
@@ -1188,7 +1219,7 @@
         }
         
         function hideOverlay(overlayId) { 
-            document.getElementById(overlayId).classList.add('hidden'); // 修正：移除了多餘的引號
+            document.getElementById(overlayId).classList.add('hidden');
         }
         
         function hideAllOverlays() {
@@ -1213,7 +1244,7 @@
         
         window.addEventListener('DOMContentLoaded', () => {
             applyConfiguration();
-            console.log('🚀 香港浸會大學 李作權大道 AR 互動遊戲（繁體中文版）已載入');
+            console.log('🚀 香港浸會大學 李作權大道 AR 互動遊戲（AR 問答版）已載入');
             console.log('📍 GPS 導航:', GAME_CONFIG.behavior.useGPS ? '已啟用' : '已停用');
         });
     </script>
@@ -1263,7 +1294,7 @@
         </div>
     </div>
     
-    <!-- Question Overlay -->
+    <!-- AR Question Overlay -->
     <div id="question-overlay" class="overlay hidden">
         <div id="question-container">
             <div id="quiz-panel-background"></div>
