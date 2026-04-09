@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>HKBU Li Promenade AR Guide</title>
+    <title>香港浸會大學 李作權大道 AR 互動遊戲</title>
     
     <!-- QR Code Scanner Library -->
     <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
@@ -19,7 +19,7 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'PingFang HK', 'Heiti TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #000;
             overflow: hidden;
             width: 100vw;
@@ -61,7 +61,7 @@
             display: none !important;
         }
         
-        /* ==================== NAVIGATION ARROW (ISSUE 2 FIXED) ==================== */
+        /* ==================== NAVIGATION ARROW ==================== */
         #arrow-container {
             position: fixed;
             top: 50%;
@@ -77,7 +77,6 @@
             width: 100%;
             height: 100%;
             clip-path: polygon(50% 0%, 0% 70%, 30% 70%, 30% 100%, 70% 100%, 70% 70%, 100% 70%);
-            /* FIXED: Removed CSS transition to prevent afterimages, added hardware acceleration */
             will-change: transform;
         }
         
@@ -120,7 +119,7 @@
             font-size: 15px;
             text-align: center;
             margin-bottom: 15px;
-            line-height: 1.5;
+            line-height: 1.6;
             color: #CCCCCC;
             white-space: pre-line;
         }
@@ -149,17 +148,19 @@
             background: linear-gradient(135deg, #000000 0%, #1a1a2e 100%);
             text-align: center;
             padding: 40px 30px;
+            overflow-y: auto;
         }
         
         #welcome-screen h1 {
-            font-size: 28px;
+            font-size: 24px;
             margin-bottom: 20px;
+            line-height: 1.4;
         }
         
         #welcome-screen p {
             color: white;
             font-size: 16px;
-            line-height: 1.6;
+            line-height: 1.8;
             margin-bottom: 30px;
             white-space: pre-line;
         }
@@ -261,7 +262,7 @@
             transform: translateX(-50%);
             width: 80%;
             font-size: 18px;
-            line-height: 1.5;
+            line-height: 1.6;
             text-align: center;
             color: white;
             text-shadow: 0 2px 8px rgba(0,0,0,0.9);
@@ -322,11 +323,11 @@
             top: 58px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 14px;
+            font-size: 13px;
             text-align: left;
             width: 180px;
             font-weight: bold;
-            line-height: 1.4;
+            line-height: 1.5;
             color: #333;
             text-shadow: 0 1px 2px rgba(255,255,255,0.7);
             margin-top: 40px;
@@ -350,8 +351,8 @@
             pointer-events: auto;
             width: 280px;
             height: 55px;
-            font-size: 17px;
-            padding: 0;
+            font-size: 14px;
+            padding: 0 10px;
             border: none;
             cursor: pointer;
             background-image: url('button-blue.png');
@@ -365,7 +366,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            text-align: center;
             transition: transform 0.2s ease;
+            line-height: 1.3;
         }
         
         .answer-btn:active {
@@ -392,10 +395,10 @@
             max-width: 300px;
             padding: 15px;
             border-radius: 10px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             white-space: pre-line;
-            line-height: 1.5;
+            line-height: 1.6;
             text-align: center;
             z-index: 20;
         }
@@ -458,24 +461,27 @@
     <!-- ================================================================= -->
     <script>
         const GAME_CONFIG = {
+            // ==================== 基本設定 ====================
             general: {
-                gameName: "HKBU Li Promenade AR Guide",
-                welcomeTitle: " HKBU Li Promenade AR Guide",
-                welcomeMessage: "Welcome to an interactive navigation experience!\n\nYou'll explore HKBU's Li Promenade, answer questions about the university, and learn while you walk.\n\nPlease allow camera, motion, and location access when prompted.",
-                completionTitle: " Congratulations!",
-                completionMessage: "You have successfully completed the HKBU Li Promenade AR tour!\n\nThank you for exploring with us."
+                gameName: "香港浸會大學 李作權大道 AR 互動遊戲",
+                welcomeTitle: "🎓 香港浸會大學\n李作權大道 AR 互動遊戲",
+                welcomeMessage: "歡迎來到互動導航體驗！\n\n你將探索浸大的李作權大道，在步行的同時回答與環境氣候相關的問題並學習新知識 🔆。\n\n✅ 請在系統提示時，允許程式存取相機、動作及方向感應器。",
+                completionTitle: "🎉 恭喜完成！",
+                completionMessage: "你已成功完成香港浸會大學\n李作權大道 AR 互動導覽！\n\n感謝你與我們一起探索。"
             },
             
+            // ==================== 影片設定 ====================
             video: {
                 enableIntroVideo: true,
                 enableOutroVideo: false,
                 introVideoPath: "intro.mp4",
                 outroVideoPath: "outro.mp4",
                 showSkipButton: true,
-                skipButtonText: "Skip Video",
+                skipButtonText: "跳過影片",
                 autoPlayVideos: true
             },
             
+            // ==================== 外觀設定 ====================
             appearance: {
                 arrowColor: "#00FFFF",
                 arrowSize: 120,
@@ -487,71 +493,87 @@
                 scannerErrorColor: "#FF3B30"
             },
             
+            // ==================== 行為設定 ====================
             behavior: {
                 qrScanInterval: 500,
                 scanErrorTimeout: 1500,
-                arrowSmoothness: 0.15, // Optimized for requestAnimationFrame
+                arrowSmoothness: 0.15,
                 showDistance: true,
                 showDebugPanel: true,
-                incorrectAnswerDelay: 3000,
+                incorrectAnswerDelay: 4000, // 增加中文閱讀時間
                 correctAnswerBg: "#d4edda",
                 correctAnswerText: "#155724",
                 incorrectAnswerBg: "#f8d7da",
                 incorrectAnswerText: "#721c24",
-                // GPS Navigation Settings
-                useGPS: true, // Set to false to use static bearings only
+                useGPS: true,
                 gpsHighAccuracy: true,
                 gpsMaxAge: 5000,
                 gpsTimeout: 10000
             },
             
-            // IMPORTANT: Replace these coordinates with actual GPS locations!
+            // ==================== 起點二維碼 ====================
             originQR: {
                 content: "HKBU_LI_PROMENADE_ORIGIN",
-                displayName: "Origin Point",
-                lat: 22.3374, // UPDATE: Stand at origin, open iPhone Maps, get coordinates
-                lng: 114.1818  // UPDATE: Stand at origin, open iPhone Maps, get coordinates
+                displayName: "起點",
+                lat: 22.3374, // 請更新：於起點處開啟 iPhone 地圖，記錄座標
+                lng: 114.1818  // 請更新：於起點處開啟 iPhone 地圖，記錄座標
             },
             
+            // ==================== 檢查點 ====================
             checkpoints: [
                 {
-                    name: "Library Steps",
+                    name: "圖書館台階",
                     qrCode: "HKBU_CP1",
-                    lat: 22.3376, // UPDATE: Stand at Library Steps, get GPS coordinates
-                    lng: 114.1820, // UPDATE: Stand at Library Steps, get GPS coordinates
-                    fallbackBearing: 45,   // Used if GPS fails
-                    fallbackDistance: 30,  // Used if GPS fails
-                    question: "What year was Hong Kong Baptist University founded?",
-                    answers: ["1954", "1956", "1958", "1960"],
-                    correctAnswerIndex: 1,
-                    hint: "It was founded in the mid-1950s, two years after 1954.",
-                    arrivalMessage: "Welcome to the Library Steps!"
+                    lat: 22.3376, // 請更新：於圖書館台階記錄 GPS 座標
+                    lng: 114.1820,
+                    fallbackBearing: 45,
+                    fallbackDistance: 30,
+                    question: "哪種氣體是導致全球暖化主要的溫室氣體？",
+                    answers: [
+                        "A. 氮氣 (N₂)",
+                        "B. 氧氣 (O₂)",
+                        "C. 二氧化碳 (CO₂)",
+                        "D. 氬氣 (Ar)"
+                    ],
+                    correctAnswerIndex: 2,
+                    hint: "這種氣體主要來自燃燒化石燃料（如汽車廢氣）以及我們的呼吸，植物則會吸收它。",
+                    arrivalMessage: "歡迎來到圖書館台階！"
                 },
                 {
-                    name: "Student Center",
+                    name: "學生中心",
                     qrCode: "HKBU_CP2",
-                    lat: 22.3378, // UPDATE: Stand at Student Center, get GPS coordinates
-                    lng: 114.1822, // UPDATE: Stand at Student Center, get GPS coordinates
+                    lat: 22.3378, // 請更新：於學生中心記錄 GPS 座標
+                    lng: 114.1822,
                     fallbackBearing: 135,
                     fallbackDistance: 45,
-                    question: "What is HKBU's educational philosophy?",
-                    answers: ["Academic Excellence Only", "Whole Person Education", "Research First", "Professional Training"],
+                    question: "哪種做法最能有效減少日常交通產生的溫室氣體排放？",
+                    answers: [
+                        "A. 短途旅行也獨自駕駛私家車",
+                        "B. 盡可能搭乘大眾運輸工具、騎單車或步行",
+                        "C. 停車等候時不熄火（引擎保持怠速）",
+                        "D. 捨棄火車，改為頻繁搭乘短途飛機"
+                    ],
                     correctAnswerIndex: 1,
-                    hint: "HKBU emphasizes developing both academic knowledge and personal character.",
-                    arrivalMessage: "You've reached the Student Center!"
+                    hint: "想想看，哪種方式可以讓更多人同時移動，或者完全不需要消耗燃料？",
+                    arrivalMessage: "你已抵達學生中心！"
                 },
                 {
-                    name: "Academic Building",
-                    qrCode: "HKBU_CP3", 
-                    lat: 22.3380, // UPDATE: Stand at Academic Building, get GPS coordinates
-                    lng: 114.1815, // UPDATE: Stand at Academic Building, get GPS coordinates
+                    name: "教學大樓",
+                    qrCode: "HKBU_CP3",
+                    lat: 22.3380, // 請更新：於教學大樓記錄 GPS 座標
+                    lng: 114.1815,
                     fallbackBearing: 270,
                     fallbackDistance: 35,
-                    question: "Which school is HKBU particularly well-known for?",
-                    answers: ["School of Medicine", "School of Communication", "School of Law", "School of Agriculture"],
-                    correctAnswerIndex: 1,
-                    hint: "HKBU has a strong reputation in media and journalism programs.",
-                    arrivalMessage: "Welcome to the Academic Building!"
+                    question: "哪種能源屬於可再生能源，且在發電時有助於減少大氣污染？",
+                    answers: [
+                        "A. 煤炭",
+                        "B. 天然氣",
+                        "C. 風能",
+                        "D. 柴油"
+                    ],
+                    correctAnswerIndex: 2,
+                    hint: "這種能源來自大自然中永不枯竭的力量，且發電過程非常潔淨。",
+                    arrivalMessage: "歡迎來到教學大樓！"
                 }
             ]
         };
@@ -579,7 +601,7 @@
         <div>
             <h1 id="welcome-title"></h1>
             <p id="welcome-message"></p>
-            <button id="start-game-btn" onclick="startGame()">Start Adventure</button>
+            <button id="start-game-btn" onclick="startGame()">開始我們的旅程！</button>
         </div>
     </div>
     
@@ -598,7 +620,7 @@
         <div id="scanner-container">
             <div id="scanner-frame"></div>
             <p id="scanner-instruction"></p>
-            <button id="cancel-scan-btn" onclick="cancelScanning()">Cancel</button>
+            <button id="cancel-scan-btn" onclick="cancelScanning()">取消</button>
         </div>
     </div>
     
@@ -609,35 +631,35 @@
             <h2 id="question-text"></h2>
             <div id="answer-buttons"></div>
             <div id="feedback"></div>
-            <button id="continue-btn" onclick="continueToNextCheckpoint()">Continue</button>
+            <button id="continue-btn" onclick="continueToNextCheckpoint()">繼續 ▶</button>
         </div>
     </div>
     
     <!-- Debug Panel -->
     <div id="debug-compass">
-        <div> Navigation Debug</div>
-        <div>Heading: <span id="debug-heading">0</span>°</div>
-        <div>GPS Dist: <span id="debug-dist">-</span>m</div>
-        <div>Target Brg: <span id="debug-target">-</span>°</div>
-        <div>Arrow Rot: <span id="debug-rotation">0</span>°</div>
-        <div>GPS Status: <span id="debug-gps">off</span></div>
+        <div>🧭 導航除錯</div>
+        <div>方向角: <span id="debug-heading">0</span>°</div>
+        <div>GPS距離: <span id="debug-dist">-</span>m</div>
+        <div>目標方位: <span id="debug-target">-</span>°</div>
+        <div>箭頭旋轉: <span id="debug-rotation">0</span>°</div>
+        <div>GPS狀態: <span id="debug-gps">關閉</span></div>
     </div>
 
     <script>
         // ============================================
-        // GAME STATE VARIABLES
+        // 遊戲狀態變數
         // ============================================
         let gameState = 'welcome';
         let currentCheckpointIndex = 0;
         let deviceHeading = 0;
-        let smoothedHeading = 0; // For smooth rendering
+        let smoothedHeading = 0;
         let isOriginSet = false;
         let videoStream = null;
         let scanningInterval = null;
         let isScanning = false;
         let animationFrameId = null;
         
-        // GPS Navigation State (ISSUE 3 SOLUTION)
+        // GPS 導航狀態
         let currentLat = null;
         let currentLng = null;
         let watchPositionId = null;
@@ -646,17 +668,14 @@
         let hasGPSSignal = false;
 
         // ============================================
-        // GPS HELPER FUNCTIONS (ISSUE 3 SOLUTION)
+        // GPS 輔助函式
         // ============================================
-        
-        // Haversine formula for accurate distance calculation
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371000; // Earth radius in meters
+            const R = 6371000;
             const φ1 = lat1 * Math.PI / 180;
             const φ2 = lat2 * Math.PI / 180;
             const Δφ = (lat2 - lat1) * Math.PI / 180;
             const Δλ = (lon2 - lon1) * Math.PI / 180;
-
             const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
                       Math.cos(φ1) * Math.cos(φ2) *
                       Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
@@ -664,13 +683,11 @@
             return R * c;
         }
 
-        // Calculate bearing from current position to target
         function calculateBearing(lat1, lon1, lat2, lon2) {
             const φ1 = lat1 * Math.PI / 180;
             const φ2 = lat2 * Math.PI / 180;
             const λ1 = lon1 * Math.PI / 180;
             const λ2 = lon2 * Math.PI / 180;
-
             const y = Math.sin(λ2 - λ1) * Math.cos(φ2);
             const x = Math.cos(φ1) * Math.sin(φ2) -
                       Math.sin(φ1) * Math.cos(φ2) * Math.cos(λ2 - λ1);
@@ -680,7 +697,7 @@
 
         function startGPSTracking() {
             if (!GAME_CONFIG.behavior.useGPS || !navigator.geolocation) {
-                console.log('GPS disabled or unavailable, using fallback navigation');
+                console.log('GPS 已停用或不可用，使用備用導航');
                 return;
             }
 
@@ -690,24 +707,27 @@
                     currentLat = position.coords.latitude;
                     currentLng = position.coords.longitude;
                     
-                    // Update navigation if we're currently navigating
                     if (gameState === 'navigating' && currentCheckpointIndex < GAME_CONFIG.checkpoints.length) {
                         const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-                        currentDistance = Math.round(calculateDistance(currentLat, currentLng, checkpoint.lat, checkpoint.lng));
-                        currentBearing = calculateBearing(currentLat, currentLng, checkpoint.lat, checkpoint.lng);
+                        currentDistance = Math.round(
+                            calculateDistance(currentLat, currentLng, checkpoint.lat, checkpoint.lng)
+                        );
+                        currentBearing = calculateBearing(
+                            currentLat, currentLng, checkpoint.lat, checkpoint.lng
+                        );
                         
-                        // Update distance display
                         if (GAME_CONFIG.behavior.showDistance) {
-                            document.getElementById('distance-display').textContent = `${currentDistance}m away`;
+                            document.getElementById('distance-display').textContent = 
+                                `距離約 ${currentDistance} 米`;
                         }
                     }
                     
-                    document.getElementById('debug-gps').textContent = 'active';
+                    document.getElementById('debug-gps').textContent = '運作中';
                 },
                 (error) => {
-                    console.warn('GPS Error:', error.message);
+                    console.warn('GPS 錯誤:', error.message);
                     hasGPSSignal = false;
-                    document.getElementById('debug-gps').textContent = 'error';
+                    document.getElementById('debug-gps').textContent = '錯誤';
                 },
                 {
                     enableHighAccuracy: GAME_CONFIG.behavior.gpsHighAccuracy,
@@ -726,18 +746,15 @@
         }
         
         // ============================================
-        // CAMERA LIFECYCLE MANAGEMENT (ISSUE 1 SOLUTION)
+        // 相機生命週期管理
         // ============================================
-        
         async function startCameraStream() {
             try {
-                // Stop existing stream if present
                 if (videoStream) {
                     videoStream.getTracks().forEach(track => track.stop());
                     videoStream = null;
                 }
 
-                // Request new camera stream
                 videoStream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: 'environment',
@@ -749,18 +766,17 @@
                 const videoElement = document.getElementById('camera-view');
                 videoElement.srcObject = videoStream;
 
-                // Wait for video to load
                 await new Promise((resolve) => {
                     videoElement.onloadedmetadata = () => {
-                        videoElement.play().catch(e => console.log('Video play prevented:', e));
+                        videoElement.play().catch(e => console.log('影片播放受阻:', e));
                         resolve();
                     };
                 });
 
-                console.log('✅ Camera stream started successfully');
+                console.log('✅ 相機串流啟動成功');
             } catch (error) {
-                console.error('❌ Camera start error:', error);
-                alert('Unable to access camera. Please check permissions and try again.');
+                console.error('❌ 相機啟動錯誤:', error);
+                alert('無法存取相機，請確認已授予相機權限並重試。');
             }
         }
 
@@ -768,32 +784,30 @@
             if (videoStream) {
                 videoStream.getTracks().forEach(track => {
                     track.stop();
-                    console.log('🔴 Camera track stopped');
+                    console.log('🔴 相機軌道已停止');
                 });
                 videoStream = null;
             }
         }
 
-        // ISSUE 1 SOLUTION: Handle iOS Safari camera blackout recovery
+        // 相機黑屏復原
         document.addEventListener('visibilitychange', async () => {
             if (document.visibilityState === 'visible') {
-                console.log('📱 App resumed, restarting camera...');
+                console.log('📱 應用程式已恢復，正在重啟相機…');
                 if (gameState !== 'welcome') {
                     await startCameraStream();
-                    // Re-bind orientation listeners (iOS sometimes drops them)
                     window.addEventListener('deviceorientation', handleOrientationChange, true);
                     window.addEventListener('deviceorientationabsolute', handleOrientationChange, true);
                 }
             } else {
-                console.log('📱 App backgrounded, stopping camera to save battery');
+                console.log('📱 應用程式已進入背景，停止相機以節省電量');
                 stopCameraStream();
             }
         });
 
-        // Additional iOS Safari recovery
         window.addEventListener('pageshow', async (event) => {
             if (event.persisted || document.visibilityState === 'visible') {
-                console.log('📱 Page restored from cache, restarting camera...');
+                console.log('📱 頁面已從快取恢復，正在重啟相機…');
                 if (gameState !== 'welcome') {
                     await startCameraStream();
                 }
@@ -801,7 +815,7 @@
         });
 
         // ============================================
-        // INITIALIZATION AND CONFIGURATION
+        // 初始化和配置
         // ============================================
         function applyConfiguration() {
             const config = GAME_CONFIG;
@@ -837,25 +851,20 @@
         
         async function startGame() {
             try {
-                // Request iOS compass permission
                 if (typeof DeviceOrientationEvent !== 'undefined' && 
                     typeof DeviceOrientationEvent.requestPermission === 'function') {
                     const permission = await DeviceOrientationEvent.requestPermission();
                     if (permission !== 'granted') {
-                        alert('🧭 Compass permission is REQUIRED for navigation!');
+                        alert('🧭 導航需要羅盤權限，請允許存取！');
                         return;
                     }
                 }
                 
-                // Bind compass event listeners
                 window.addEventListener('deviceorientation', handleOrientationChange, true);
                 window.addEventListener('deviceorientationabsolute', handleOrientationChange, true);
                 
-                // Start camera and GPS
                 await startCameraStream();
                 startGPSTracking();
-                
-                // Start smooth render loop (ISSUE 2 SOLUTION)
                 startRenderLoop();
                 
                 hideOverlay('welcome-screen');
@@ -867,13 +876,13 @@
                 }
                 
             } catch (error) {
-                console.error('Startup error:', error);
-                alert('Unable to start game. Please allow camera and motion permissions.');
+                console.error('啟動錯誤:', error);
+                alert('無法啟動遊戲，請允許相機及動作感應器權限。');
             }
         }
         
         // ============================================
-        // VIDEO SYSTEM
+        // 影片系統
         // ============================================
         function playIntroVideo() {
             gameState = 'introVideo';
@@ -882,7 +891,7 @@
             videoSource.src = GAME_CONFIG.video.introVideoPath;
             videoElement.load();
             if (GAME_CONFIG.video.autoPlayVideos) {
-                videoElement.play().catch(err => console.log('Autoplay prevented'));
+                videoElement.play().catch(err => console.log('自動播放受阻'));
             }
             videoElement.onended = () => {
                 hideOverlay('video-overlay');
@@ -900,17 +909,14 @@
         }
         
         // ============================================
-        // COMPASS & SMOOTH RENDER LOOP (ISSUE 2 SOLUTION)
+        // 羅盤和流暢渲染循環
         // ============================================
-        
         function handleOrientationChange(event) {
             let newHeading = null;
             
             if (event.webkitCompassHeading !== undefined) {
-                // iOS Safari (0° = North, clockwise)
                 newHeading = event.webkitCompassHeading;
             } else if (event.alpha !== null) {
-                // Standard web (0° = North, counterclockwise from North)
                 newHeading = 360 - event.alpha;
             }
             
@@ -919,39 +925,29 @@
             }
         }
 
-        // ISSUE 2 SOLUTION: Smooth render loop using requestAnimationFrame
         function startRenderLoop() {
             function render() {
-                // Smooth heading interpolation to prevent jitter
                 let headingDiff = deviceHeading - smoothedHeading;
-                
-                // Handle 360° wraparound
                 if (headingDiff > 180) headingDiff -= 360;
                 if (headingDiff < -180) headingDiff += 360;
                 
-                // Apply smoothing
                 smoothedHeading += headingDiff * GAME_CONFIG.behavior.arrowSmoothness;
                 
-                // Normalize to 0-360°
                 if (smoothedHeading < 0) smoothedHeading += 360;
                 if (smoothedHeading >= 360) smoothedHeading -= 360;
 
-                // Update navigation arrow if we're navigating
                 if (gameState === 'navigating' && currentCheckpointIndex < GAME_CONFIG.checkpoints.length) {
                     updateNavigationArrow();
                 }
                 
-                // Continue render loop
                 animationFrameId = requestAnimationFrame(render);
             }
-            
             render();
         }
 
         function updateNavigationArrow() {
             const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
             
-            // ISSUE 3 SOLUTION: Use GPS bearing if available, otherwise fallback to static bearing
             let targetBearing;
             if (hasGPSSignal && GAME_CONFIG.behavior.useGPS) {
                 targetBearing = currentBearing;
@@ -959,18 +955,13 @@
                 targetBearing = checkpoint.fallbackBearing;
             }
             
-            // Calculate arrow rotation
             let rotation = targetBearing - smoothedHeading;
-            
-            // Normalize rotation to ±180°
             while (rotation > 180) rotation -= 360;
             while (rotation < -180) rotation += 360;
             
-            // Apply rotation to arrow (synced with display refresh rate)
             const arrow = document.getElementById('navigation-arrow');
             arrow.style.transform = `rotate(${rotation}deg)`;
             
-            // Update debug display
             updateDebugDisplay(targetBearing, rotation);
         }
 
@@ -984,7 +975,7 @@
         }
         
         // ============================================
-        // QR SCANNING SYSTEM
+        // 二維碼掃描系統
         // ============================================
         function startQRScanning() {
             if (isScanning) return;
@@ -994,10 +985,11 @@
             resetScannerAppearance();
             
             if (gameState === 'scanOrigin') {
-                document.getElementById('scanner-instruction').textContent = 'Scan the ORIGIN QR code';
+                document.getElementById('scanner-instruction').textContent = '請掃描起點二維碼';
             } else if (gameState === 'scanCheckpoint') {
                 const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-                document.getElementById('scanner-instruction').textContent = `Scan QR for: ${checkpoint.name}`;
+                document.getElementById('scanner-instruction').textContent = 
+                    `請掃描「${checkpoint.name}」的二維碼`;
             }
             scanningInterval = setInterval(scanForQRCode, GAME_CONFIG.behavior.qrScanInterval);
         }
@@ -1024,7 +1016,7 @@
                     handleQRCodeDetected(qrCode.data);
                 }
             } catch (error) {
-                console.error('QR scanning error:', error);
+                console.error('二維碼掃描錯誤:', error);
             }
         }
         
@@ -1065,7 +1057,7 @@
                     isOriginSet = true;
                     setTimeout(() => startNavigationToCheckpoint(), 500);
                 } else {
-                    showScannerError('❌ Wrong QR! Scan ORIGIN marker');
+                    showScannerError('❌ 二維碼錯誤！請掃描起點標記');
                     setTimeout(() => { 
                         resetScannerAppearance(); 
                         startQRScanning(); 
@@ -1077,7 +1069,7 @@
                     hideOverlay('scanner-overlay');
                     setTimeout(() => showQuestion(), 500);
                 } else {
-                    showScannerError(`❌ Wrong QR! Scan: ${checkpoint.name}`);
+                    showScannerError(`❌ 二維碼錯誤！請掃描「${checkpoint.name}」`);
                     setTimeout(() => { 
                         resetScannerAppearance(); 
                         startQRScanning(); 
@@ -1087,17 +1079,18 @@
         }
         
         // ============================================
-        // NAVIGATION SYSTEM
+        // 導航系統
         // ============================================
         function promptOriginScan() {
             gameState = 'scanOrigin';
             showStatusPanel();
-            document.getElementById('checkpoint-name').textContent = 'Welcome to HKBU Li Promenade!';
+            document.getElementById('checkpoint-name').textContent = '歡迎來到李作權大道！';
             document.getElementById('distance-display').textContent = '';
-            document.getElementById('instruction-text').textContent = 'To begin your journey, please scan the ORIGIN QR code located at the starting point.';
+            document.getElementById('instruction-text').textContent = 
+                '若要開啟你的旅程，請掃描位於起點處的二維碼 📍';
             
             const btn = document.getElementById('main-action-btn');
-            btn.textContent = 'Scan Origin QR Code';
+            btn.textContent = '掃描起點二維碼';
             btn.onclick = startQRScanning;
         }
         
@@ -1112,22 +1105,23 @@
             
             showStatusPanel();
             document.getElementById('arrow-container').style.display = 'block';
-            document.getElementById('checkpoint-name').textContent = `Navigate to: ${checkpoint.name}`;
+            document.getElementById('checkpoint-name').textContent = `導航至：${checkpoint.name}`;
             
-            // Initialize distance display
             if (GAME_CONFIG.behavior.showDistance) {
                 if (hasGPSSignal) {
-                    document.getElementById('distance-display').textContent = `${currentDistance}m away`;
+                    document.getElementById('distance-display').textContent = 
+                        `距離約 ${currentDistance} 米`;
                 } else {
-                    document.getElementById('distance-display').textContent = `~${checkpoint.fallbackDistance}m away`;
+                    document.getElementById('distance-display').textContent = 
+                        `距離約 ${checkpoint.fallbackDistance} 米`;
                 }
             }
             
             document.getElementById('instruction-text').textContent = 
-                `Follow the blue arrow to reach your destination.\n\nWhen you arrive, tap "I've Arrived".`;
+                '請跟隨藍色箭頭前往目的地。\n\n抵達後，請點擊「我已到達」。';
             
             const btn = document.getElementById('main-action-btn');
-            btn.textContent = "I've Arrived";
+            btn.textContent = '我已到達';
             btn.onclick = promptCheckpointScan;
         }
         
@@ -1137,18 +1131,18 @@
             const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
             
             document.getElementById('checkpoint-name').textContent = 
-                checkpoint.arrivalMessage || `Great! You've reached:`;
+                checkpoint.arrivalMessage || '你已成功抵達！';
             document.getElementById('distance-display').textContent = checkpoint.name;
             document.getElementById('instruction-text').textContent = 
-                'Now scan the checkpoint QR code to answer the question.';
+                '請掃描此站的二維碼以回答問題。';
             
             const btn = document.getElementById('main-action-btn');
-            btn.textContent = 'Scan Checkpoint QR';
+            btn.textContent = '掃描二維碼';
             btn.onclick = startQRScanning;
         }
         
         // ============================================
-        // QUESTION SYSTEM
+        // 問答系統
         // ============================================
         function showQuestion() {
             gameState = 'question';
@@ -1185,14 +1179,14 @@
             buttons.forEach(btn => btn.disabled = true);
             
             if (answerIndex === checkpoint.correctAnswerIndex) {
-                feedback.textContent = '✅ Correct! Well done!';
+                feedback.textContent = '✅ 答對了！做得好！';
                 feedback.style.background = GAME_CONFIG.behavior.correctAnswerBg;
                 feedback.style.color = GAME_CONFIG.behavior.correctAnswerText;
                 feedback.style.border = `2px solid ${GAME_CONFIG.behavior.correctAnswerText}`;
                 continueBtn.style.display = 'block';
             } else {
-                let feedbackText = '❌ Incorrect. Please try again.';
-                if (checkpoint.hint) feedbackText += `\n\nHint: ${checkpoint.hint}`;
+                let feedbackText = '❌ 答錯了，請再試一次。';
+                if (checkpoint.hint) feedbackText += `\n\n💡 提示：${checkpoint.hint}`;
                 
                 feedback.textContent = feedbackText;
                 feedback.style.background = GAME_CONFIG.behavior.incorrectAnswerBg;
@@ -1215,7 +1209,7 @@
         }
         
         // ============================================
-        // GAME COMPLETION
+        // 遊戲完成
         // ============================================
         function gameComplete() {
             gameState = 'complete';
@@ -1228,12 +1222,12 @@
             document.getElementById('instruction-text').textContent = GAME_CONFIG.general.completionMessage;
             
             const btn = document.getElementById('main-action-btn');
-            btn.textContent = 'Restart Game';
+            btn.textContent = '重新開始';
             btn.onclick = () => location.reload();
         }
         
         // ============================================
-        // DEBUG PANEL
+        // 除錯面板
         // ============================================
         function updateDebugPanelVisibility() {
             const debugPanel = document.getElementById('debug-compass');
@@ -1247,7 +1241,7 @@
         setInterval(updateDebugPanelVisibility, 1000);
         
         // ============================================
-        // UI HELPER FUNCTIONS
+        // UI 輔助函式
         // ============================================
         function showStatusPanel() { 
             document.getElementById('status-panel').classList.remove('hidden'); 
@@ -1262,7 +1256,7 @@
         }
         
         function hideOverlay(overlayId) { 
-            document.getElementById(overlayId).classList.add('hidden'); 
+            document.getElementById(overlayId').classList.add('hidden'); 
         }
         
         function hideAllOverlays() {
@@ -1274,7 +1268,7 @@
         }
         
         // ============================================
-        // CLEANUP & INITIALIZATION
+        // 清理和初始化
         // ============================================
         window.addEventListener('beforeunload', () => {
             stopCameraStream();
@@ -1287,8 +1281,8 @@
         
         window.addEventListener('DOMContentLoaded', () => {
             applyConfiguration();
-            console.log('🚀 HKBU Li Promenade AR Game v4.0 - All Issues Fixed!');
-            console.log('📍 GPS Navigation:', GAME_CONFIG.behavior.useGPS ? 'ENABLED' : 'DISABLED');
+            console.log('🚀 香港浸會大學 李作權大道 AR 互動遊戲（繁體中文版）已載入');
+            console.log('📍 GPS 導航:', GAME_CONFIG.behavior.useGPS ? '已啟用' : '已停用');
         });
     </script>
 </body>
