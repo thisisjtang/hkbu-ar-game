@@ -63,7 +63,7 @@
 
         #start-game-btn {
             width: 70%; max-width: 220px; padding: 12px 24px; 
-            margin-bottom: 35px; /* ✅ 按鈕往上移 */
+            margin-bottom: 35px; /* 按鈕往上移 */
             color: #000; border: none; border-radius: 25px; font-size: clamp(15px, 3.5vw, 18px);
             font-weight: bold; cursor: pointer; letter-spacing: 0.5px; position: relative; z-index: 3;
             box-shadow: 0 6px 20px rgba(0,0,0,0.4); animation: btnBreath 2.5s ease-in-out infinite; transition: transform 0.15s ease;
@@ -75,12 +75,12 @@
         /* ==================== 導航箭頭 ==================== */
         #arrow-container {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 15; display: none; pointer-events: none;
+            z-index: 15; display: none; pointer-events: none; transition: opacity 0.3s ease;
         }
         
         #navigation-arrow {
             width: 100%; height: 100%; background-size: contain; background-position: center;
-            background-repeat: no-repeat; will-change: transform; transition: opacity 0.3s ease;
+            background-repeat: no-repeat; will-change: transform;
         }
 
         /* ==================== 狀態面板 ==================== */
@@ -91,20 +91,39 @@
         }
         
         #checkpoint-name { font-size: 18px; font-weight: bold; margin-bottom: 8px; text-align: center; }
-        #distance-display { font-size: 28px; font-weight: bold; text-align: center; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); transition: color 0.5s ease; }
-        .dist-far { color: #FFFFFF !important; } .dist-medium { color: #FFD700 !important; } .dist-close { color: #00FF88 !important; } .dist-very-close { color: #00FF00 !important; }
+        #distance-display { 
+            font-size: 28px; font-weight: bold; text-align: center; margin-bottom: 10px; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5); transition: all 0.5s ease; min-height: 40px;
+        }
+        
+        /* 距離顏色編碼 */
+        .dist-far { color: #FFFFFF !important; }
+        .dist-medium { color: #FFD700 !important; }
+        .dist-close { color: #00FF88 !important; }
+        .dist-proximity { color: #00FF00 !important; font-size: 20px !important; }
+        
         #instruction-text { font-size: 14px; text-align: center; margin-bottom: 15px; line-height: 1.6; color: #CCCCCC; white-space: pre-line; }
         
         #main-action-btn { 
             display: block; width: 100%; max-width: 300px; margin: 0 auto; padding: 15px 30px; 
             color: #000; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; 
-            cursor: pointer; transition: all 0.3s ease;
-            /* ✅ 確保按鈕永遠可點擊 */
-            pointer-events: auto !important; opacity: 1 !important;
+            cursor: pointer; transition: all 0.3s ease; pointer-events: auto !important;
         }
         
         #main-action-btn:active { transform: scale(0.97); }
         
+        /* 掃描準備脈衝效果 */
+        @keyframes scanPulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 255, 136, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+        }
+        .scan-ready {
+            animation: scanPulse 1.5s infinite !important;
+            background: linear-gradient(135deg, #00FF88 0%, #00CC66 100%) !important;
+            color: #000 !important;
+        }
+
         /* ==================== GPS 狀態指示器 ==================== */
         #gps-indicator { 
             position: fixed; top: 15px; right: 15px; width: 50px; height: 50px; border-radius: 50%; 
@@ -182,16 +201,16 @@
                 scannerFrameColor: "#00FFFF", scannerErrorColor: "#FF3B30"
             },
             
-            // ✅ 優化後的導航設定
+            // ✅ 雙模式導航配置
             navigation: {
-                proximityRadius: 30,        // 接近提示距離
+                proximityRadius: 30,        // 進入此範圍後切換為「尋找模式」
                 hybridSwitchDistance: 25,   // GPS/靜態方位角切換點
                 gpsHighAccuracy: true,
-                gpsMaxAge: 0,              // ✅ 關鍵：強制最新位置，解決快取問題
+                gpsMaxAge: 0,              // 強制取最新GPS位置
                 gpsTimeout: 8000,
                 headingSmoothness: 0.08,
-                minMovementThreshold: 2,    // 降低移動門檻
-                magneticDeclination: -2.5,  // 香港磁偏角補正
+                minMovementThreshold: 2,
+                magneticDeclination: -2.5,
                 showDebugPanel: true
             },
             
@@ -231,13 +250,9 @@
         // 遊戲狀態變數
         let gameState = 'welcome', currentCheckpointIndex = 0, deviceHeading = 0, smoothedHeading = 0;
         let videoStream = null, scanningInterval = null, isScanning = false, animationFrameId = null;
-
-        // GPS狀態
         let currentLat = null, currentLng = null, watchPositionId = null;
         let currentDistance = 9999, dynamicBearing = 0, gpsAccuracy = 999, hasGPSSignal = false;
         let lastMovementLat = null, lastMovementLng = null;
-        
-        // ✅ 距離穩定化系統
         let distanceHistory = [];
         const DISTANCE_HISTORY_SIZE = 5;
 
@@ -260,18 +275,15 @@
             return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
         }
 
-        // ✅ 中位數濾波器：消除GPS跳動
         function getStableDistance(newDistance) {
             distanceHistory.push(newDistance);
-            if (distanceHistory.length > DISTANCE_HISTORY_SIZE) {
-                distanceHistory.shift();
-            }
+            if (distanceHistory.length > DISTANCE_HISTORY_SIZE) distanceHistory.shift();
             const sorted = [...distanceHistory].sort((a, b) => a - b);
             return sorted[Math.floor(sorted.length / 2)];
         }
 
         // ================================================================
-        //                  ✅ 完全修正的GPS追蹤系統
+        //              ✅ 修正後的GPS追蹤系統
         // ================================================================
         function startGPSTracking() {
             if (!navigator.geolocation) return;
@@ -289,28 +301,22 @@
             const lat = position.coords.latitude, lng = position.coords.longitude;
             const accuracy = Math.round(position.coords.accuracy);
 
-            // ✅ 關鍵修正：移除嚴格過濾，改用寬鬆策略
+            // ✅ 關鍵修正：移除嚴格過濾，接受所有GPS位置更新
             hasGPSSignal = true; currentLat = lat; currentLng = lng; gpsAccuracy = accuracy;
 
-            // 更新GPS狀態指示器（視覺提示但不阻止更新）
+            // GPS狀態指示器（視覺提示但不阻止更新）
             const gpsEl = document.getElementById('gps-indicator');
-            if (accuracy < 25) {
-                gpsEl.className = 'gps-good'; gpsEl.textContent = '📍';
-            } else if (accuracy < 50) {
-                gpsEl.className = 'gps-warn'; gpsEl.textContent = '📍';
-            } else {
-                gpsEl.className = 'gps-poor'; gpsEl.textContent = '⚠️';
-            }
+            if (accuracy < 25) { gpsEl.className = 'gps-good'; gpsEl.textContent = '📍'; }
+            else if (accuracy < 50) { gpsEl.className = 'gps-warn'; gpsEl.textContent = '📍'; }
+            else { gpsEl.className = 'gps-poor'; gpsEl.textContent = '⚠️'; }
 
             if (gameState !== 'navigating' || currentCheckpointIndex >= GAME_CONFIG.checkpoints.length) return;
 
             const cp = GAME_CONFIG.checkpoints[currentCheckpointIndex];
             const rawDistance = calculateDistance(lat, lng, cp.lat, cp.lng);
-
-            // ✅ 使用中位數濾波器穩定距離
             currentDistance = getStableDistance(rawDistance);
 
-            // ✅ 智能方位角更新：只在真正移動時才更新
+            // 智能方位角更新：只在移動時更新
             if (lastMovementLat !== null && lastMovementLng !== null) {
                 const movementDistance = calculateDistance(lat, lng, lastMovementLat, lastMovementLng);
                 if (movementDistance >= GAME_CONFIG.navigation.minMovementThreshold) {
@@ -322,7 +328,6 @@
                 lastMovementLat = lat; lastMovementLng = lng;
             }
 
-            // ✅ 每次GPS更新都調用UI更新
             updateNavigationUI();
         }
 
@@ -330,7 +335,6 @@
             hasGPSSignal = false;
             const gpsEl = document.getElementById('gps-indicator');
             gpsEl.className = 'gps-poor'; gpsEl.textContent = '❌';
-            console.warn('GPS錯誤:', error.message);
         }
 
         function stopGPSTracking() {
@@ -342,10 +346,9 @@
         }
 
         // ================================================================
-        //              ✅ 完全重構的UI更新系統
+        //              ✅ 雙模式導航UI系統
         // ================================================================
         function updateNavigationUI() {
-            // 安全檢查：只在導航狀態執行
             if (gameState !== 'navigating') return;
 
             const distEl = document.getElementById('distance-display');
@@ -354,46 +357,69 @@
             const arrowEl = document.getElementById('arrow-container');
             const d = Math.round(currentDistance);
 
-            // ✅ 核心修正：簡化邏輯，永遠更新距離顯示
-            distEl.textContent = `距離約 ${d} 米`;
-
-            // 根據距離調整顏色和提示文字
-            if (d > 100) {
-                distEl.className = 'dist-far';
-                instrEl.textContent = "請跟隨箭頭前往目的地。\n\nGPS導航模式";
-            } else if (d > 50) {
-                distEl.className = 'dist-medium';
-                instrEl.textContent = "繼續跟隨箭頭前進。\n\n混合導航模式";
-            } else if (d > GAME_CONFIG.navigation.proximityRadius) {
-                distEl.className = 'dist-close';
-                instrEl.textContent = "請跟隨箭頭前往目的地。\n\n精準導航模式";
-            } else {
-                distEl.className = 'dist-very-close';
-                instrEl.textContent = "🟢 你正在接近目標！準備尋找二維碼。";
-            }
-
-            // ✅ 確保箭頭永遠可見，按鈕永遠可用
-            arrowEl.style.opacity = '1';
-            actionBtn.textContent = "我已到達";
+            // 確保按鈕永遠可用
             actionBtn.disabled = false;
             actionBtn.style.pointerEvents = 'auto';
-            
-            // ✅ 確保按鈕事件正確綁定
+
+            if (d > GAME_CONFIG.navigation.proximityRadius) {
+                // ====================================================
+                // 模式A：遠距離導航 - 顯示距離數字 + 箭頭
+                // ====================================================
+                
+                // 顯示箭頭
+                arrowEl.style.display = 'block';
+                arrowEl.style.opacity = '1';
+                
+                // 顯示距離數字
+                distEl.textContent = `距離約 ${d} 米`;
+                if (d > 100) {
+                    distEl.className = 'dist-far';
+                    instrEl.textContent = "請跟隨箭頭前往目的地。";
+                } else if (d > 50) {
+                    distEl.className = 'dist-medium';
+                    instrEl.textContent = "繼續跟隨箭頭前進。";
+                } else {
+                    distEl.className = 'dist-close';
+                    instrEl.textContent = "請跟隨箭頭前往目的地。";
+                }
+
+                // 按鈕為手動到達模式
+                actionBtn.textContent = "我已到達";
+                actionBtn.classList.remove('scan-ready');
+
+            } else {
+                // ====================================================
+                // 模式B：接近模式 - 隱藏數字，引導尋找QR
+                // ====================================================
+                
+                // ✅ 隱藏距離數字，改為位置提示
+                distEl.textContent = "📍 目標就在附近";
+                distEl.className = 'dist-proximity';
+                
+                // ✅ 提供清晰的行動指示
+                instrEl.textContent = "🟢 你正在接近目標！準備尋找二維碼。\n\n請在周圍尋找貼有二維碼的標牌或告示。";
+                
+                // 淡化箭頭（仍顯示作為參考，但不是主要導航工具）
+                arrowEl.style.display = 'block';
+                arrowEl.style.opacity = '0.4';
+                
+                // 按鈕變為掃描模式，加入脈衝效果
+                actionBtn.textContent = "🔍 掃描二維碼";
+                actionBtn.classList.add('scan-ready');
+            }
+
+            // ✅ 統一按鈕功能：直接進入掃描模式
             actionBtn.onclick = function() {
-                console.log('手動到達按鈕被點擊');
                 gameState = 'scanCheckpoint';
                 startQRScanning();
             };
         }
 
-        // ================================================================
-        //                  混合導航箭頭系統
-        // ================================================================
         function updateNavigationArrow() {
             if (gameState !== 'navigating' || currentCheckpointIndex >= GAME_CONFIG.checkpoints.length) return;
 
             const cp = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-            let targetBearing = 0, navMode = '靜態';
+            let targetBearing = 0, navMode = '備用';
 
             if (hasGPSSignal) {
                 if (currentDistance > GAME_CONFIG.navigation.hybridSwitchDistance) {
@@ -402,26 +428,24 @@
                     targetBearing = cp.staticBearing || dynamicBearing; navMode = '精準';
                 }
             } else {
-                targetBearing = cp.staticBearing || 0; navMode = '備用';
+                targetBearing = cp.staticBearing || 0;
             }
 
             // 磁偏角補正
             targetBearing = (targetBearing + GAME_CONFIG.navigation.magneticDeclination + 360) % 360;
 
-            // 計算箭頭旋轉
             let rotation = targetBearing - smoothedHeading;
             while (rotation > 180) rotation -= 360;
             while (rotation < -180) rotation += 360;
 
             document.getElementById('navigation-arrow').style.transform = `rotate(${rotation}deg)`;
 
-            // 更新除錯面板
+            // 除錯面板
             if (GAME_CONFIG.navigation.showDebugPanel) {
                 document.getElementById('debug-heading').textContent = Math.round(smoothedHeading);
-                document.getElementById('debug-target').textContent = `${Math.round(targetBearing)}° (${navMode})`;
+                document.getElementById('debug-target').textContent = `${Math.round(targetBearing)}° [${navMode}]`;
                 document.getElementById('debug-rotation').textContent = Math.round(rotation);
                 document.getElementById('debug-dist').textContent = Math.round(currentDistance);
-                document.getElementById('debug-raw-dist').textContent = distanceHistory.length > 0 ? Math.round(distanceHistory[distanceHistory.length - 1]) : '-';
                 const accEl = document.getElementById('debug-acc');
                 accEl.textContent = gpsAccuracy + 'm';
                 accEl.className = gpsAccuracy < 25 ? 'val-good' : gpsAccuracy < 50 ? 'val-warn' : 'val-bad';
@@ -429,7 +453,7 @@
         }
 
         // ================================================================
-        //                  相機生命週期管理
+        //              相機生命週期管理
         // ================================================================
         async function startCameraStream() {
             try {
@@ -455,7 +479,7 @@
         });
 
         // ================================================================
-        //                  羅盤處理和渲染循環
+        //              羅盤處理和渲染循環
         // ================================================================
         function handleOrientationChange(event) {
             let rawHeading = null;
@@ -483,7 +507,7 @@
         }
 
         // ================================================================
-        //                  配置應用
+        //              配置應用
         // ================================================================
         function applyConfiguration() {
             const cfg = GAME_CONFIG;
@@ -517,7 +541,7 @@
         }
 
         // ================================================================
-        //                  遊戲啟動
+        //              遊戲啟動
         // ================================================================
         async function startGame() {
             try {
@@ -534,7 +558,7 @@
         }
 
         // ================================================================
-        //                  其他遊戲系統
+        //              影片系統
         // ================================================================
         function playIntroVideo() {
             gameState = 'introVideo';
@@ -550,12 +574,27 @@
             if (gameState === 'introVideo') promptOriginScan(); else if (gameState === 'outroVideo') gameComplete();
         }
 
+        // ================================================================
+        //              ✅ QR掃描系統 - 修復箭頭不消失Bug
+        // ================================================================
         function startQRScanning() {
             if (isScanning) return;
-            isScanning = true; hideStatusPanel(); showOverlay('scanner-overlay');
-            document.getElementById('scanner-frame').style.borderColor = GAME_CONFIG.appearance.scannerFrameColor;
-            document.getElementById('scanner-instruction').style.color = 'white';
-            document.getElementById('scanner-instruction').textContent = gameState === 'scanOrigin' ? '請掃描起點二維碼' : `請掃描「${GAME_CONFIG.checkpoints[currentCheckpointIndex].name}」的二維碼`;
+            isScanning = true;
+            hideStatusPanel();
+
+            // 🎯 核心修正：進入掃描模式時強制隱藏箭頭
+            document.getElementById('arrow-container').style.display = 'none';
+
+            showOverlay('scanner-overlay');
+            resetScannerAppearance();
+
+            if (gameState === 'scanOrigin') {
+                document.getElementById('scanner-instruction').textContent = '請掃描起點二維碼';
+            } else if (gameState === 'scanCheckpoint') {
+                const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
+                document.getElementById('scanner-instruction').textContent = 
+                    `請掃描「${checkpoint.name}」的二維碼`;
+            }
             scanningInterval = setInterval(scanForQRCode, GAME_CONFIG.behavior.qrScanInterval);
         }
 
@@ -571,8 +610,32 @@
             } catch(e) { console.error('QR錯誤:', e); }
         }
 
-        function stopScanning() { isScanning = false; if (scanningInterval) { clearInterval(scanningInterval); scanningInterval = null; } }
-        function cancelScanning() { stopScanning(); hideOverlay('scanner-overlay'); if (gameState === 'scanOrigin') promptOriginScan(); else showStatusPanel(); }
+        function stopScanning() { 
+            isScanning = false; 
+            if (scanningInterval) { clearInterval(scanningInterval); scanningInterval = null; } 
+        }
+
+        function cancelScanning() { 
+            stopScanning(); 
+            hideOverlay('scanner-overlay'); 
+            if (gameState === 'scanOrigin') {
+                promptOriginScan(); 
+            } else if (gameState === 'scanCheckpoint') {
+                // ✅ 取消掃描時恢復導航狀態
+                gameState = 'navigating';
+                showStatusPanel();
+                // 根據距離決定是否顯示箭頭
+                if (currentDistance > GAME_CONFIG.navigation.proximityRadius) {
+                    document.getElementById('arrow-container').style.display = 'block';
+                }
+                updateNavigationUI();
+            }
+        }
+
+        function resetScannerAppearance() {
+            document.getElementById('scanner-frame').style.borderColor = GAME_CONFIG.appearance.scannerFrameColor;
+            document.getElementById('scanner-instruction').style.color = 'white';
+        }
 
         function handleQRCodeDetected(content) {
             if (gameState === 'scanOrigin') {
@@ -595,18 +658,18 @@
             }
         }
 
-        function resetScannerAppearance() {
-            document.getElementById('scanner-frame').style.borderColor = GAME_CONFIG.appearance.scannerFrameColor;
-            document.getElementById('scanner-instruction').style.color = 'white';
-        }
-
+        // ================================================================
+        //              導航流程
+        // ================================================================
         function promptOriginScan() {
             gameState = 'scanOrigin'; showStatusPanel();
+            document.getElementById('arrow-container').style.display = 'none';
             document.getElementById('checkpoint-name').textContent = '歡迎來到李作權大道！';
             document.getElementById('distance-display').textContent = '';
             document.getElementById('instruction-text').textContent = '若要開啟你的旅程，請掃描位於起點處的二維碼 📍';
             const btn = document.getElementById('main-action-btn');
             btn.textContent = '掃描起點二維碼'; btn.disabled = false; btn.onclick = startQRScanning;
+            btn.classList.remove('scan-ready');
         }
 
         function startNavigationToCheckpoint() {
@@ -614,7 +677,7 @@
             
             gameState = 'navigating';
             
-            // ✅ 完整重置導航狀態
+            // 重置導航狀態
             distanceHistory = [];
             lastMovementLat = null; lastMovementLng = null;
             currentDistance = 9999;
@@ -625,20 +688,27 @@
             document.getElementById('checkpoint-name').textContent = `導航至：${GAME_CONFIG.checkpoints[currentCheckpointIndex].name}`;
             document.getElementById('distance-display').textContent = '正在定位…';
             document.getElementById('distance-display').className = 'dist-far';
-            document.getElementById('instruction-text').textContent = '請跟隨箭頭前往目的地。\n\n系統會在25米內切換為精準導航模式。';
+            document.getElementById('instruction-text').textContent = '請跟隨箭頭前往目的地。';
 
             const btn = document.getElementById('main-action-btn');
             btn.textContent = '我已到達'; btn.disabled = false;
+            btn.classList.remove('scan-ready');
             btn.onclick = function() {
-                console.log('手動到達觸發');
                 gameState = 'scanCheckpoint';
                 startQRScanning();
             };
         }
 
+        // ================================================================
+        //              問答系統
+        // ================================================================
         function showQuestion() {
             gameState = 'question'; hideStatusPanel();
+            
+            // ✅ 確保問答時箭頭也隱藏
+            document.getElementById('arrow-container').style.display = 'none';
             document.getElementById('gps-indicator').style.display = 'none';
+            
             const cp = GAME_CONFIG.checkpoints[currentCheckpointIndex];
             document.getElementById('question-text').textContent = cp.question;
             const container = document.getElementById('answer-buttons'); container.innerHTML = '';
@@ -676,6 +746,9 @@
 
         function continueToNextCheckpoint() { hideOverlay('question-overlay'); currentCheckpointIndex++; startNavigationToCheckpoint(); }
 
+        // ================================================================
+        //              遊戲完成
+        // ================================================================
         function gameComplete() {
             gameState = 'complete'; hideAllOverlays();
             document.getElementById('arrow-container').style.display = 'none';
@@ -686,9 +759,12 @@
             document.getElementById('instruction-text').textContent = GAME_CONFIG.general.completionMessage;
             const btn = document.getElementById('main-action-btn');
             btn.textContent = '重新開始'; btn.onclick = () => location.reload();
+            btn.classList.remove('scan-ready');
         }
 
-        // UI輔助函式
+        // ================================================================
+        //              UI輔助函式
+        // ================================================================
         function showOverlay(id) { document.getElementById(id).classList.remove('hidden'); }
         function hideOverlay(id) { document.getElementById(id).classList.add('hidden'); }
         function showStatusPanel() { document.getElementById('status-panel').classList.remove('hidden'); }
@@ -706,7 +782,8 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             applyConfiguration();
-            console.log('🚀 HKBU AR Game v14.0 - GPS凍結問題完全修正版');
+            console.log('🚀 HKBU AR Game v18.0 - 雙模式導航 + 完美掃描體驗');
+            console.log(`📍 接近門檻：${GAME_CONFIG.navigation.proximityRadius}米`);
         });
     </script>
 
@@ -758,13 +835,12 @@
     </div>
 
     <div id="debug-compass">
-        <div class="debug-title">🧭 混合導航 v14.0</div>
+        <div class="debug-title">🧭 雙模式導航 v18.0</div>
         <div class="debug-section">── 羅盤 ──</div>
         <div>平滑方向: <span id="debug-heading">0</span>°</div>
         <div class="debug-section">── GPS ──</div>
         <div>精度: <span id="debug-acc">-</span></div>
         <div>穩定距離: <span id="debug-dist">-</span>m</div>
-        <div>原始距離: <span id="debug-raw-dist">-</span>m</div>
         <div class="debug-section">── 導航 ──</div>
         <div>目標方位: <span id="debug-target">-</span></div>
         <div>箭頭旋轉: <span id="debug-rotation">-</span>°</div>
