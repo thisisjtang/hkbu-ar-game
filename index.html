@@ -141,8 +141,8 @@
         #scanner-overlay { background: transparent; }
         #scanner-container { position: relative; width: 100%; height: 100%; }
         #scanner-frame { position: absolute; width: 280px; height: 280px; top: 107px; left: 50%; transform: translateX(-50%); border: 4px solid #00ffff; border-radius: 20px; background: transparent; box-shadow: 0 0 0 9999px rgba(0,0,0,0.8), 0 0 16px #00ffff; transition: border-color 0.3s ease; z-index: 10; }
-        #scanner-frame::before { content: ''; position: absolute; top: 50%; left: 50%; width: 60px; height: 60px; border: 3px solid #00FFFF; border-radius: 50%; transform: translate(-50%, -50%); animation: scanPulse 2s infinite; }
-        @keyframes scanPulse { 0% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.3); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+        #scanner-frame::before { content: ''; position: absolute; top: 50%; left: 50%; width: 60px; height: 60px; border: 3px solid #00FFFF; border-radius: 50%; transform: translate(-50%, -50%); animation: scannerPulse 2s infinite; }
+        @keyframes scannerPulse { 0% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.3); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
         #scanner-instruction { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); width: 80%; font-size: 18px; line-height: 1.6; text-align: center; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.9); z-index: 11; }
         #cancel-scan-btn { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); padding: 12px 30px; background: rgba(255,255,255,0.2); color: white; border: 2px solid white; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; backdrop-filter: blur(5px); z-index: 11; }
         
@@ -170,8 +170,78 @@
 </head>
 <body>
 
+    <!-- 📷 主相機畫面 -->
+    <video id="camera-view" autoplay muted playsinline></video>
+    <canvas id="qr-canvas"></canvas>
+
     <!-- 🎵 音效元素 -->
     <audio id="scan-success-audio" src="scan_success.mp3" preload="auto"></audio>
+
+    <!-- 🔼 導航箭頭與 GPS 指示 -->
+    <div id="arrow-container"><div id="navigation-arrow"></div></div>
+    <div id="gps-indicator">📡</div>
+
+    <!-- 📌 底部狀態面板 -->
+    <div id="status-panel" class="hidden">
+        <div id="checkpoint-name"></div>
+        <div id="distance-display"></div>
+        <div id="instruction-text"></div>
+        <button id="main-action-btn"></button>
+    </div>
+
+    <!-- 👋 歡迎畫面 -->
+    <div id="welcome-screen" class="overlay">
+        <div id="welcome-card">
+            <div id="welcome-text-area">
+                <h1 id="welcome-title"></h1>
+                <p id="welcome-message"></p>
+                <button id="start-game-btn" onclick="startGame()">開始我們的旅程！</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎬 影片覆蓋層 -->
+    <div id="video-overlay" class="overlay hidden">
+        <video id="game-video" playsinline>
+            <source id="video-source" src="" type="video/mp4">
+        </video>
+        <div id="video-controls">
+            <button id="skip-video-btn" onclick="skipVideo()"></button>
+        </div>
+    </div>
+
+    <!-- 🔍 掃描 QR 覆蓋層 -->
+    <div id="scanner-overlay" class="overlay hidden">
+        <div id="scanner-container">
+            <div id="scanner-frame"></div>
+            <p id="scanner-instruction"></p>
+            <button id="cancel-scan-btn" onclick="cancelScanning()">取消</button>
+        </div>
+    </div>
+
+    <!-- ❓ 問答覆蓋層 -->
+    <div id="question-overlay" class="overlay hidden">
+        <div id="question-container">
+            <div id="quiz-panel-background"></div>
+            <h2 id="question-text"></h2>
+            <div id="answer-buttons"></div>
+            <div id="feedback"></div>
+            <button id="continue-btn" onclick="continueToNextCheckpoint()">繼續 ▶</button>
+        </div>
+    </div>
+
+    <!-- 🧭 除錯面板 -->
+    <div id="debug-compass">
+        <div class="debug-title">🧭 音效導航 v20.1</div>
+        <div class="debug-section">── 羅盤 ──</div>
+        <div>平滑方向: <span id="debug-heading">0</span>°</div>
+        <div class="debug-section">── GPS ──</div>
+        <div>精度: <span id="debug-acc">-</span></div>
+        <div>穩定距離: <span id="debug-dist">-</span>m</div>
+        <div class="debug-section">── 導航 ──</div>
+        <div>目標方位: <span id="debug-target">-</span></div>
+        <div>箭頭旋轉: <span id="debug-rotation">-</span>°</div>
+    </div>
 
     <script>
         const GAME_CONFIG = {
@@ -192,7 +262,6 @@
                 welcomeBackground: "welcome-bg.png", cardWidth: "87vw", cardMaxWidth: "400px",
                 cardAspectRatio: "9 / 16", cardMaxHeight: "85vh", navigationArrow: "arrow.png",
                 showWelcomeText: false, startButtonText: "開始我們的旅程！",
-                // 🎵 音效設定
                 scanSuccessSound: "scan_success.mp3"
             },
             
@@ -273,6 +342,11 @@
             if (distanceHistory.length > DISTANCE_HISTORY_SIZE) distanceHistory.shift();
             const sorted = [...distanceHistory].sort((a, b) => a - b);
             return sorted[Math.floor(sorted.length / 2)];
+        }
+
+        // ✅ 修正：安全的數值格式化函數
+        function formatNumber(val) {
+            return isFinite(val) ? Math.round(val) : '-';
         }
 
         // ================================================================
@@ -414,10 +488,10 @@
             document.getElementById('navigation-arrow').style.transform = `rotate(${rotation}deg)`;
 
             if (GAME_CONFIG.navigation.showDebugPanel) {
-                document.getElementById('debug-heading').textContent = Math.round(smoothedHeading);
-                document.getElementById('debug-target').textContent = `${Math.round(targetBearing)}° [${navMode}]`;
-                document.getElementById('debug-rotation').textContent = Math.round(rotation);
-                document.getElementById('debug-dist').textContent = Math.round(currentDistance);
+                document.getElementById('debug-heading').textContent = formatNumber(smoothedHeading);
+                document.getElementById('debug-target').textContent = `${formatNumber(targetBearing)}° [${navMode}]`;
+                document.getElementById('debug-rotation').textContent = formatNumber(rotation);
+                document.getElementById('debug-dist').textContent = formatNumber(currentDistance);
                 const accEl = document.getElementById('debug-acc');
                 accEl.textContent = gpsAccuracy + 'm';
                 accEl.className = gpsAccuracy < 25 ? 'val-good' : gpsAccuracy < 50 ? 'val-warn' : 'val-bad';
@@ -482,12 +556,10 @@
         //              🎵 音效系統
         // ================================================================
         function initAudio() {
-            // iOS Safari 音效解鎖機制
             const audio = document.getElementById('scan-success-audio');
             if (audio) {
-                audio.load(); // 預載音效檔案
+                audio.load();
                 
-                // 在用戶首次互動時解鎖音效（iOS Safari要求）
                 const unlockAudio = () => {
                     audio.play().then(() => {
                         audio.pause();
@@ -498,7 +570,6 @@
                     });
                 };
                 
-                // 監聽用戶的第一次點擊或觸摸
                 document.addEventListener('touchstart', unlockAudio, { once: true });
                 document.addEventListener('click', unlockAudio, { once: true });
             }
@@ -507,11 +578,9 @@
         function playScanSuccessSound() {
             const audio = document.getElementById('scan-success-audio');
             if (audio) {
-                // 重置播放位置，允許快速連續播放
                 audio.currentTime = 0;
                 audio.play().catch(error => {
                     console.log('音效播放失敗（可能被瀏覽器阻擋）:', error);
-                    // 不影響遊戲流程，靜默處理
                 });
             }
         }
@@ -529,7 +598,6 @@
                 window.addEventListener('deviceorientation', handleOrientationChange, true);
                 window.addEventListener('deviceorientationabsolute', handleOrientationChange, true);
                 
-                // 🎵 初始化音效系統
                 initAudio();
                 
                 await startCameraStream(); startGPSTracking(); startRenderLoop();
@@ -556,14 +624,13 @@
         }
 
         // ================================================================
-        //              ✅ QR掃描系統（加入音效 + 修復箭頭Bug）
+        //              QR掃描系統
         // ================================================================
         function startQRScanning() {
             if (isScanning) return;
             isScanning = true;
             hideStatusPanel();
 
-            // 🎯 修復：進入掃描模式時完全隱藏箭頭
             document.getElementById('arrow-container').style.display = 'none';
 
             showOverlay('scanner-overlay');
@@ -604,7 +671,6 @@
             } else if (gameState === 'scanCheckpoint') {
                 gameState = 'navigating';
                 showStatusPanel();
-                // 根據距離決定是否顯示箭頭
                 if (currentDistance > GAME_CONFIG.navigation.proximityRadius) {
                     document.getElementById('arrow-container').style.display = 'block';
                 }
@@ -618,12 +684,11 @@
         }
 
         // ================================================================
-        //              ✅ QR掃描結果處理（核心音效邏輯）
+        //              QR掃描結果處理（音效邏輯）
         // ================================================================
         function handleQRCodeDetected(content) {
             if (gameState === 'scanOrigin') {
                 if (content === GAME_CONFIG.originQR.content) {
-                    // ✅ 起點掃描成功：不播放音效
                     hideOverlay('scanner-overlay'); 
                     setTimeout(startNavigationToCheckpoint, 500);
                 } else {
@@ -634,7 +699,6 @@
             } else if (gameState === 'scanCheckpoint') {
                 const cp = GAME_CONFIG.checkpoints[currentCheckpointIndex];
                 if (content === cp.qrCode) {
-                    // 🎵 檢查點掃描成功：播放音效
                     playScanSuccessSound();
                     
                     hideOverlay('scanner-overlay'); 
@@ -666,7 +730,6 @@
             
             gameState = 'navigating';
             
-            // 重置導航狀態
             distanceHistory = [];
             lastMovementLat = null; lastMovementLng = null;
             currentDistance = 9999;
@@ -694,7 +757,6 @@
         function showQuestion() {
             gameState = 'question'; hideStatusPanel();
             
-            // ✅ 確保問答時箭頭完全隱藏
             document.getElementById('arrow-container').style.display = 'none';
             document.getElementById('gps-indicator').style.display = 'none';
             
@@ -805,70 +867,8 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             applyConfiguration();
-            console.log('🚀 HKBU AR Game v20.0 - 音效系統 + 箭頭修復');
+            console.log('🚀 HKBU AR Game v20.1 - 音效系統修復版');
         });
     </script>
-
-    <!-- HTML元素 -->
-    <video id="camera-view" autoplay muted playsinline></video>
-    <canvas id="qr-canvas"></canvas>
-
-    <!-- 🎵 音效元素 -->
-    <audio id="scan-success-audio" src="scan_success.mp3" preload="auto"></audio>
-
-    <div id="arrow-container"><div id="navigation-arrow"></div></div>
-    <div id="gps-indicator">📡</div>
-
-    <div id="status-panel" class="hidden">
-        <div id="checkpoint-name"></div>
-        <div id="distance-display"></div>
-        <div id="instruction-text"></div>
-        <button id="main-action-btn"></button>
-    </div>
-
-    <div id="welcome-screen" class="overlay">
-        <div id="welcome-card">
-            <div id="welcome-text-area">
-                <h1 id="welcome-title"></h1>
-                <p id="welcome-message"></p>
-                <button id="start-game-btn" onclick="startGame()">開始我們的旅程！</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="video-overlay" class="overlay hidden">
-        <video id="game-video" playsinline><source id="video-source" src="" type="video/mp4"></video>
-        <div id="video-controls"><button id="skip-video-btn" onclick="skipVideo()"></button></div>
-    </div>
-
-    <div id="scanner-overlay" class="overlay hidden">
-        <div id="scanner-container">
-            <div id="scanner-frame"></div>
-            <p id="scanner-instruction"></p>
-            <button id="cancel-scan-btn" onclick="cancelScanning()">取消</button>
-        </div>
-    </div>
-
-    <div id="question-overlay" class="overlay hidden">
-        <div id="question-container">
-            <div id="quiz-panel-background"></div>
-            <h2 id="question-text"></h2>
-            <div id="answer-buttons"></div>
-            <div id="feedback"></div>
-            <button id="continue-btn" onclick="continueToNextCheckpoint()">繼續 ▶</button>
-        </div>
-    </div>
-
-    <div id="debug-compass">
-        <div class="debug-title">🧭 音效導航 v20.0</div>
-        <div class="debug-section">── 羅盤 ──</div>
-        <div>平滑方向: <span id="debug-heading">0</span>°</div>
-        <div class="debug-section">── GPS ──</div>
-        <div>精度: <span id="debug-acc">-</span></div>
-        <div>穩定距離: <span id="debug-dist">-</span>m</div>
-        <div class="debug-section">── 導航 ──</div>
-        <div>目標方位: <span id="debug-target">-</span></div>
-        <div>箭頭旋轉: <span id="debug-rotation">-</span>°</div>
-    </div>
 </body>
 </html>
