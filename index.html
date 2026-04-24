@@ -315,6 +315,7 @@
 
     <!-- 🎵 音效元素 -->
     <audio id="scan-success-audio" src="scan_success.mp3" preload="auto"></audio>
+    <audio id="navigation-sound-audio" src="navigation_sound.mp3" preload="auto"></audio>
 
     <!-- ⏱️ 計時器 -->
     <div id="timer-display">10:00</div>
@@ -375,7 +376,7 @@
 
     <!-- 🧭 除錯面板（隱藏但保留程式碼）-->
     <div id="debug-compass">
-        <div class="debug-title">🧭 計時器挑戰 v21.2</div>
+        <div class="debug-title">🧭 雷達導航 v22.0</div>
         <div class="debug-section">── 羅盤 ──</div>
         <div>平滑方向: <span id="debug-heading">0</span>°</div>
         <div class="debug-section">── GPS ──</div>
@@ -408,18 +409,18 @@
             video: {
                 enableIntroVideo: true,
                 introVideoPath: "chineseintro.mp4",
-                transitionVideoPath: "updatedtransition.mp4",  // ⬅️ 新增這一行
+                transitionVideoPath: "updatedtransition.mp4",
                 showSkipButton: true,
                 skipButtonText: "跳過影片",
                 autoPlayVideos: true
             },
 
-            
             assets: {
                 welcomeBackground: "welcome-bg.png", cardWidth: "87vw", cardMaxWidth: "400px",
                 cardAspectRatio: "9 / 16", cardMaxHeight: "85vh", navigationArrow: "arrow.png",
                 showWelcomeText: false, startButtonText: "開始我們的旅程！",
-                scanSuccessSound: "scan_success.mp3"
+                scanSuccessSound: "scan_success.mp3",
+                navigationSound: "navigation_sound.mp3"
             },
             
             appearance: {
@@ -432,6 +433,17 @@
                 gpsMaxAge: 0, gpsTimeout: 8000, headingSmoothness: 0.08,
                 minMovementThreshold: 2, magneticDeclination: -2.5,
                 showDebugPanel: false
+            },
+
+            // 🔊 雷達音效距離配置（可調整）
+            radarSound: {
+                farDistance: 100,       // 超過此距離為遠距離模式
+                mediumDistance: 50,     // 超過此距離為中距離模式
+                closeDistance: 30,      // 超過此距離為近距離模式
+                farInterval: 5000,      // 遠距離：每5秒
+                mediumInterval: 3000,   // 中距離：每3秒
+                closeInterval: 1000,    // 近距離：每1秒
+                nearInterval: 500       // 接近模式：每0.5秒
             },
             
             behavior: {
@@ -485,6 +497,10 @@
 
         // 🎵 音效解鎖旗標
         let audioUnlocked = false;
+
+        // 🔊 雷達導航音效狀態
+        let navigationSoundInterval = null;
+        let currentSoundZone = null; // 'far' | 'medium' | 'close' | 'near'
 
         // ================================================================
         //              ⏳ 計時器系統
@@ -658,6 +674,9 @@
             }
 
             actionBtn.onclick = function() { gameState = 'scanCheckpoint'; startQRScanning(); };
+
+            // 🔊 根據最新距離更新雷達音效
+            updateRadarSound();
         }
 
         function updateNavigationArrow() {
@@ -745,36 +764,49 @@
         }
 
         // ================================================================
-        //              🎵 音效系統（完全修復版）
+        //              🎵 音效系統
         // ================================================================
         function initAudio() {
             const audio = document.getElementById('scan-success-audio');
+            const navAudio = document.getElementById('navigation-sound-audio');
             if (!audio) return;
 
+            // 預載所有音效
             audio.load();
+            if (navAudio) navAudio.load();
 
             const unlockAudio = () => {
                 if (audioUnlocked) return;
                 audioUnlocked = true;
 
-                // ✅ 雙重保護：靜音 + 音量歸零
+                // 靜音解鎖掃描音效
                 const originalVolume = audio.volume;
                 audio.volume = 0;
-
                 audio.play().then(() => {
                     audio.pause();
                     audio.currentTime = 0;
                     audio.volume = originalVolume;
-                    console.log('✅ 音效系統已靜音解鎖');
+                    console.log('✅ 掃描音效已靜音解鎖');
+
+                    // 同步解鎖導航雷達音效
+                    if (navAudio) {
+                        const navOriginalVolume = navAudio.volume;
+                        navAudio.volume = 0;
+                        navAudio.play().then(() => {
+                            navAudio.pause();
+                            navAudio.currentTime = 0;
+                            navAudio.volume = navOriginalVolume;
+                            console.log('✅ 導航音效已靜音解鎖');
+                        }).catch(() => {});
+                    }
                 }).catch(() => {
                     audio.volume = originalVolume;
-                    audioUnlocked = false; // 允許下次重試
+                    audioUnlocked = false;
                     console.log('⚠️ 音效解鎖失敗，將在下次互動時重試');
                 });
             };
 
-            // ✅ 核心修復：延遲到下一個事件循環
-            // 確保觸發 startGame() 的 click 事件完全結束後才綁定監聽器
+            // 延遲綁定，避免 startGame() 點擊事件誤觸發
             setTimeout(() => {
                 document.addEventListener('touchstart', unlockAudio, { once: true });
                 document.addEventListener('click', unlockAudio, { once: true });
@@ -786,9 +818,68 @@
             if (audio) {
                 audio.currentTime = 0;
                 audio.play().catch(error => {
-                    console.log('音效播放失敗（可能被瀏覽器阻擋）:', error);
+                    console.log('掃描音效播放失敗:', error);
                 });
             }
+        }
+
+        // ================================================================
+        //              🔊 雷達導航音效系統
+        // ================================================================
+        function playNavigationSound() {
+            const audio = document.getElementById('navigation-sound-audio');
+            if (audio && audioUnlocked) {
+                audio.currentTime = 0;
+                audio.play().catch(() => {});
+            }
+        }
+
+        function updateRadarSound() {
+            // 只在導航狀態下運作
+            if (gameState !== 'navigating') {
+                stopRadarSound();
+                return;
+            }
+
+            const d = Math.round(currentDistance);
+            const rs = GAME_CONFIG.radarSound;
+            let targetZone = null;
+            let intervalMs = null;
+
+            // 根據距離決定音效區間和頻率
+            if (d > rs.farDistance) {
+                targetZone = 'far';
+                intervalMs = rs.farInterval;       // 每5秒
+            } else if (d > rs.mediumDistance) {
+                targetZone = 'medium';
+                intervalMs = rs.mediumInterval;    // 每3秒
+            } else if (d > rs.closeDistance) {
+                targetZone = 'close';
+                intervalMs = rs.closeInterval;     // 每1秒
+            } else {
+                targetZone = 'near';
+                intervalMs = rs.nearInterval;      // 每0.5秒
+            }
+
+            // 只有區間改變時才重設，避免不必要的中斷
+            if (currentSoundZone !== targetZone) {
+                stopRadarSound();
+                currentSoundZone = targetZone;
+
+                // 立即播放一次，再設定定期播放
+                playNavigationSound();
+                navigationSoundInterval = setInterval(playNavigationSound, intervalMs);
+
+                console.log(`🔊 音效區間切換：${targetZone}（每 ${intervalMs}ms）`);
+            }
+        }
+
+        function stopRadarSound() {
+            if (navigationSoundInterval) {
+                clearInterval(navigationSoundInterval);
+                navigationSoundInterval = null;
+            }
+            currentSoundZone = null;
         }
 
         // ================================================================
@@ -804,7 +895,6 @@
                 window.addEventListener('deviceorientation', handleOrientationChange, true);
                 window.addEventListener('deviceorientationabsolute', handleOrientationChange, true);
 
-                // 🎵 初始化音效（修復版）
                 initAudio();
 
                 await startCameraStream(); startGPSTracking(); startRenderLoop();
@@ -816,27 +906,6 @@
         // ================================================================
         //              影片系統
         // ================================================================
-        function playTransitionVideo() {
-            gameState = 'transitionVideo';
-            const v = document.getElementById('game-video');
-            document.getElementById('video-source').src = GAME_CONFIG.video.transitionVideoPath;
-            
-            // 過場影片可跳過，隱藏重試按鈕
-            document.getElementById('skip-video-btn').style.display = 'none';
-            document.getElementById('retry-btn').style.display = 'none';
-            
-            v.load();
-            v.play().catch(() => {});
-            
-            // 播完後進入下一個導航階段
-            v.onended = () => {
-                hideOverlay('video-overlay');
-                startNavigationToCheckpoint();
-            };
-            
-            showOverlay('video-overlay');
-        }
-
         function playIntroVideo() {
             gameState = 'introVideo';
             const v = document.getElementById('game-video');
@@ -848,11 +917,32 @@
             showOverlay('video-overlay');
         }
 
+        function playTransitionVideo() {
+            gameState = 'transitionVideo';
+            const v = document.getElementById('game-video');
+            document.getElementById('video-source').src = GAME_CONFIG.video.transitionVideoPath;
+
+            // 過場影片不可跳過，隱藏所有按鈕
+            document.getElementById('skip-video-btn').style.display = 'none';
+            document.getElementById('retry-btn').style.display = 'none';
+
+            v.load();
+            v.play().catch(() => {});
+
+            // 播完後進入下一個導航階段
+            v.onended = () => {
+                hideOverlay('video-overlay');
+                startNavigationToCheckpoint();
+            };
+
+            showOverlay('video-overlay');
+        }
+
         function playOutroVideo(isWin) {
             gameState = isWin ? 'winOutro' : 'failOutro';
             const v = document.getElementById('game-video');
-            document.getElementById('video-source').src = isWin 
-                ? GAME_CONFIG.timer.winVideoPath 
+            document.getElementById('video-source').src = isWin
+                ? GAME_CONFIG.timer.winVideoPath
                 : GAME_CONFIG.timer.failVideoPath;
 
             document.getElementById('skip-video-btn').style.display = 'none';
@@ -879,17 +969,15 @@
         function skipVideo() {
             document.getElementById('game-video').pause();
             hideOverlay('video-overlay');
-            if (gameState === 'introVideo') {
-                promptOriginScan();
-            } else if (gameState === 'transitionVideo') {  // ⬅️ 新增這個條件
-                startNavigationToCheckpoint();
-            }
+            if (gameState === 'introVideo') promptOriginScan();
+            // 過場影片不可跳過，故不加 transitionVideo 的條件
         }
 
         // ================================================================
         //              QR 掃描系統
         // ================================================================
         function startQRScanning() {
+            stopRadarSound(); // 🔊 進入掃描模式時停止雷達音效
             if (isScanning) return;
             isScanning = true; hideStatusPanel();
             document.getElementById('arrow-container').style.display = 'none';
@@ -946,7 +1034,7 @@
             if (gameState === 'scanOrigin') {
                 if (content === GAME_CONFIG.originQR.content) {
                     hideOverlay('scanner-overlay');
-                    startTimer(); // ⏳ 起點掃描成功：啟動計時器
+                    startTimer();
                     setTimeout(startNavigationToCheckpoint, 500);
                 } else {
                     document.getElementById('scanner-instruction').textContent = '❌ 二維碼錯誤！請掃描起點標記';
@@ -956,7 +1044,7 @@
             } else if (gameState === 'scanCheckpoint') {
                 const cp = GAME_CONFIG.checkpoints[currentCheckpointIndex];
                 if (content === cp.qrCode) {
-                    playScanSuccessSound(); // 🎵 只在檢查點成功時播放
+                    playScanSuccessSound();
                     hideOverlay('scanner-overlay');
                     setTimeout(showQuestion, 500);
                 } else {
@@ -1004,6 +1092,7 @@
         //              問答系統
         // ================================================================
         function showQuestion() {
+            stopRadarSound(); // 🔊 進入問答模式時停止雷達音效
             gameState = 'question'; hideStatusPanel();
             document.getElementById('arrow-container').style.display = 'none';
             document.getElementById('gps-indicator').style.display = 'none';
@@ -1046,8 +1135,8 @@
         function continueToNextCheckpoint() {
             hideOverlay('question-overlay');
             currentCheckpointIndex++;
-            
-            // 如果還有下一個檢查點，播放過場影片；否則直接進入結局
+
+            // 如果還有下一個檢查點，播放過場影片；否則觸發勝利
             if (currentCheckpointIndex < GAME_CONFIG.checkpoints.length) {
                 playTransitionVideo();
             } else {
@@ -1059,6 +1148,7 @@
         //              遊戲結局系統
         // ================================================================
         function triggerGameWin() {
+            stopRadarSound(); // 🔊 勝利時停止雷達音效
             hideTimer(); hideAllOverlays();
             document.getElementById('arrow-container').style.display = 'none';
             document.getElementById('gps-indicator').style.display = 'none';
@@ -1066,6 +1156,7 @@
         }
 
         function triggerGameFailed() {
+            stopRadarSound(); // 🔊 失敗時停止雷達音效
             hideTimer(); stopScanning(); hideAllOverlays();
             document.getElementById('arrow-container').style.display = 'none';
             document.getElementById('gps-indicator').style.display = 'none';
@@ -1131,13 +1222,13 @@
         }, 500);
 
         window.addEventListener('beforeunload', () => {
-            stopCameraStream(); stopScanning(); stopGPSTracking(); hideTimer();
+            stopCameraStream(); stopScanning(); stopGPSTracking(); hideTimer(); stopRadarSound();
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
         });
 
         window.addEventListener('DOMContentLoaded', () => {
             applyConfiguration();
-            console.log('🚀 HKBU AR Game v21.2 - 音效誤觸發完全修復版');
+            console.log('🚀 HKBU AR Game v22.0 - 雷達導航音效系統');
         });
     </script>
 </body>
