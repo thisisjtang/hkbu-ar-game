@@ -31,7 +31,7 @@
         
         .hidden { display: none !important; }
         
-        /* ==================== 歡迎畫面 - 卡片式設計 ==================== */
+        /* ==================== 歡迎畫面 ==================== */
         #welcome-screen {
             background: radial-gradient(ellipse at center, #1a1a2e 0%, #000000 100%);
             padding: 20px;
@@ -44,7 +44,10 @@
             overflow: hidden; animation: cardEntrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
 
-        @keyframes cardEntrance { 0% { opacity: 0; transform: scale(0.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes cardEntrance { 
+            0% { opacity: 0; transform: scale(0.9) translateY(20px); } 
+            100% { opacity: 1; transform: scale(1) translateY(0); } 
+        }
 
         #welcome-card::after {
             content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 35%;
@@ -58,18 +61,57 @@
             padding: 0 20px 60px; z-index: 2;
         }
 
-        #welcome-title { font-size: clamp(18px, 4.5vw, 24px); font-weight: bold; text-align: center; line-height: 1.4; margin-bottom: 10px; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.9); }
-        #welcome-message { color: rgba(255,255,255,0.9); font-size: clamp(12px, 3vw, 15px); line-height: 1.6; margin-bottom: 20px; white-space: pre-line; text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,0.9); }
+        #welcome-title { 
+            font-size: clamp(18px, 4.5vw, 24px); font-weight: bold; text-align: center; line-height: 1.4; 
+            margin-bottom: 10px; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.9); 
+        }
+        #welcome-message { 
+            color: rgba(255,255,255,0.9); font-size: clamp(12px, 3vw, 15px); line-height: 1.6; 
+            margin-bottom: 20px; white-space: pre-line; text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,0.9); 
+        }
 
         #start-game-btn {
             width: 70%; max-width: 220px; padding: 12px 24px; margin-bottom: 35px;
             color: #000; border: none; border-radius: 25px; font-size: clamp(15px, 3.5vw, 18px);
             font-weight: bold; cursor: pointer; letter-spacing: 0.5px; position: relative; z-index: 3;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4); animation: btnBreath 2.5s ease-in-out infinite; transition: transform 0.15s ease;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4); animation: btnBreath 2.5s ease-in-out infinite; 
+            transition: transform 0.15s ease;
         }
 
-        @keyframes btnBreath { 0%, 100% { box-shadow: 0 4px 15px rgba(0,255,255,0.3); } 50% { box-shadow: 0 6px 25px rgba(0,255,255,0.5); } }
+        @keyframes btnBreath { 
+            0%, 100% { box-shadow: 0 4px 15px rgba(0,255,255,0.3); } 
+            50% { box-shadow: 0 6px 25px rgba(0,255,255,0.5); } 
+        }
         #start-game-btn:active { transform: scale(0.95); }
+
+        /* ==================== 計時器系統 ==================== */
+        #timer-display {
+            position: fixed; top: 15px; left: 15px; z-index: 40;
+            padding: 10px 16px; border-radius: 16px;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+            border: 2px solid rgba(0,255,255,0.6);
+            color: #00FFFF; font-size: 18px; font-weight: bold;
+            font-variant-numeric: tabular-nums; display: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            transition: all 0.4s ease;
+        }
+
+        #timer-display.timer-warning {
+            border-color: rgba(255,80,80,0.8);
+            color: #FF5050;
+            animation: timerWarningPulse 0.8s ease-in-out infinite;
+        }
+
+        @keyframes timerWarningPulse {
+            0%, 100% { 
+                box-shadow: 0 4px 20px rgba(255,80,80,0.3); 
+                transform: scale(1); 
+            }
+            50% { 
+                box-shadow: 0 4px 28px rgba(255,80,80,0.6); 
+                transform: scale(1.05); 
+            }
+        }
 
         /* ==================== 導航箭頭 ==================== */
         #arrow-container {
@@ -100,7 +142,10 @@
         .dist-close { color: #00FF88 !important; }
         .dist-proximity { color: #00FF00 !important; font-size: 20px !important; }
         
-        #instruction-text { font-size: 14px; text-align: center; margin-bottom: 15px; line-height: 1.6; color: #CCCCCC; white-space: pre-line; }
+        #instruction-text { 
+            font-size: 14px; text-align: center; margin-bottom: 15px; line-height: 1.6; 
+            color: #CCCCCC; white-space: pre-line; 
+        }
         
         #main-action-btn { 
             display: block; width: 100%; max-width: 300px; margin: 0 auto; padding: 15px 30px; 
@@ -121,6 +166,7 @@
             color: #000 !important;
         }
 
+        /* ==================== GPS 指示器 ==================== */
         #gps-indicator { 
             position: fixed; top: 15px; right: 15px; width: 50px; height: 50px; border-radius: 50%; 
             background: rgba(0,0,0,0.8); border: 3px solid #555; z-index: 30; display: none; 
@@ -133,39 +179,132 @@
         .gps-poor { border-color: #FF6B35 !important; }
         @keyframes gpsBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
+        /* ==================== 影片系統 ==================== */
         #video-overlay { flex-direction: column; background: #000; position: relative; }
         #game-video { width: 100vw; height: 100vh; object-fit: cover; }
-        #video-controls { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 101; }
-        #skip-video-btn { padding: 12px 30px; background: rgba(255,255,255,0.2); color: white; border: 2px solid white; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; backdrop-filter: blur(5px); }
-        
+        #video-controls { 
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 101; 
+        }
+        #skip-video-btn { 
+            padding: 12px 30px; background: rgba(255,255,255,0.2); color: white; 
+            border: 2px solid white; border-radius: 8px; font-size: 16px; font-weight: bold; 
+            cursor: pointer; backdrop-filter: blur(5px); 
+        }
+
+        /* 結局重試按鈕 */
+        #retry-btn {
+            position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
+            width: 220px; padding: 16px 30px; border: none; border-radius: 25px;
+            font-size: 18px; font-weight: bold; cursor: pointer; z-index: 102;
+            display: none; box-shadow: 0 6px 25px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px); transition: all 0.3s ease;
+            animation: retryBtnEntrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes retryBtnEntrance {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.9); }
+            100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+        }
+        #retry-btn:active { transform: translateX(-50%) scale(0.96); }
+
+        /* ==================== QR 掃描器 ==================== */
         #scanner-overlay { background: transparent; }
         #scanner-container { position: relative; width: 100%; height: 100%; }
-        #scanner-frame { position: absolute; width: 280px; height: 280px; top: 107px; left: 50%; transform: translateX(-50%); border: 4px solid #00ffff; border-radius: 20px; background: transparent; box-shadow: 0 0 0 9999px rgba(0,0,0,0.8), 0 0 16px #00ffff; transition: border-color 0.3s ease; z-index: 10; }
-        #scanner-frame::before { content: ''; position: absolute; top: 50%; left: 50%; width: 60px; height: 60px; border: 3px solid #00FFFF; border-radius: 50%; transform: translate(-50%, -50%); animation: scannerPulse 2s infinite; }
-        @keyframes scannerPulse { 0% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.3); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
-        #scanner-instruction { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); width: 80%; font-size: 18px; line-height: 1.6; text-align: center; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.9); z-index: 11; }
-        #cancel-scan-btn { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); padding: 12px 30px; background: rgba(255,255,255,0.2); color: white; border: 2px solid white; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; backdrop-filter: blur(5px); z-index: 11; }
+        #scanner-frame { 
+            position: absolute; width: 280px; height: 280px; top: 107px; left: 50%; 
+            transform: translateX(-50%); border: 4px solid #00ffff; border-radius: 20px; 
+            background: transparent; box-shadow: 0 0 0 9999px rgba(0,0,0,0.8), 0 0 16px #00ffff; 
+            transition: border-color 0.3s ease; z-index: 10; 
+        }
+        #scanner-frame::before { 
+            content: ''; position: absolute; top: 50%; left: 50%; width: 60px; height: 60px; 
+            border: 3px solid #00FFFF; border-radius: 50%; 
+            transform: translate(-50%, -50%); animation: scannerPulse 2s infinite; 
+        }
+        @keyframes scannerPulse { 
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 
+            50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.3); } 
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 
+        }
+        #scanner-instruction { 
+            position: absolute; top: 60px; left: 50%; transform: translateX(-50%); 
+            width: 80%; font-size: 18px; line-height: 1.6; text-align: center; 
+            color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.9); z-index: 11; 
+        }
+        #cancel-scan-btn { 
+            position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); 
+            padding: 12px 30px; background: rgba(255,255,255,0.2); color: white; 
+            border: 2px solid white; border-radius: 8px; font-size: 16px; font-weight: bold; 
+            cursor: pointer; backdrop-filter: blur(5px); z-index: 11; 
+        }
         
-        #question-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 100; background: transparent; }
-        #question-overlay::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.25); backdrop-filter: blur(4px); z-index: 1; }
+        /* ==================== 問答系統 ==================== */
+        #question-overlay { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            z-index: 100; background: transparent; 
+        }
+        #question-overlay::before { 
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.25); backdrop-filter: blur(4px); z-index: 1; 
+        }
         #question-container { position: relative; width: 100%; height: 100%; z-index: 2; }
-        #quiz-panel-background { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); width: 251px; height: 222px; background-image: url('quiz-panel.png'); background-size: 100% 100%; background-repeat: no-repeat; background-color: transparent; image-rendering: pixelated; z-index: 10; filter: drop-shadow(0 8px 25px rgba(0,0,0,0.4)); }
-        #question-text { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); font-size: 13px; text-align: left; width: 180px; font-weight: bold; line-height: 1.5; color: #333; text-shadow: 0 1px 2px rgba(255,255,255,0.7); margin-top: 40px; margin-left: 30px; z-index: 12; }
+        #quiz-panel-background { 
+            position: absolute; top: 58px; left: 50%; transform: translateX(-50%); 
+            width: 251px; height: 222px; background-image: url('quiz-panel.png'); 
+            background-size: 100% 100%; background-repeat: no-repeat; background-color: transparent; 
+            image-rendering: pixelated; z-index: 10; filter: drop-shadow(0 8px 25px rgba(0,0,0,0.4)); 
+        }
+        #question-text { 
+            position: absolute; top: 58px; left: 50%; transform: translateX(-50%); 
+            font-size: 13px; text-align: left; width: 180px; font-weight: bold; line-height: 1.5; 
+            color: #333; text-shadow: 0 1px 2px rgba(255,255,255,0.7); 
+            margin-top: 40px; margin-left: 30px; z-index: 12; 
+        }
         #answer-buttons { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .answer-btn { position: absolute; left: 50%; transform: translateX(-50%); pointer-events: auto; width: 280px; height: 55px; font-size: 14px; padding: 0 10px; border: none; cursor: pointer; background-image: url('button-blue.png'); background-size: 100% 100%; background-repeat: no-repeat; background-color: transparent; image-rendering: pixelated; color: #333; font-weight: bold; text-shadow: 0 1px 1px rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.3; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
+        .answer-btn { 
+            position: absolute; left: 50%; transform: translateX(-50%); pointer-events: auto; 
+            width: 280px; height: 55px; font-size: 14px; padding: 0 10px; border: none; cursor: pointer; 
+            background-image: url('button-blue.png'); background-size: 100% 100%; 
+            background-repeat: no-repeat; background-color: transparent; image-rendering: pixelated; 
+            color: #333; font-weight: bold; text-shadow: 0 1px 1px rgba(255,255,255,0.8); 
+            display: flex; align-items: center; justify-content: center; text-align: center; 
+            line-height: 1.3; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); 
+        }
         .answer-btn:active { transform: translateX(-50%) scale(0.98); }
         .answer-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: translateX(-50%); }
-        .answer-btn:nth-child(1) { top: 300px; } .answer-btn:nth-child(2) { top: 360px; } .answer-btn:nth-child(3) { top: 420px; } .answer-btn:nth-child(4) { top: 480px; }
-        #feedback { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 300px; padding: 15px; border-radius: 10px; font-size: 15px; font-weight: bold; white-space: pre-line; line-height: 1.6; text-align: center; z-index: 20; backdrop-filter: blur(8px); }
-        #continue-btn { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); width: 200px; padding: 12px 30px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; border-radius: 25px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(40,167,69,0.4); z-index: 21; display: none; backdrop-filter: blur(5px); }
+        .answer-btn:nth-child(1) { top: 300px; } 
+        .answer-btn:nth-child(2) { top: 360px; } 
+        .answer-btn:nth-child(3) { top: 420px; } 
+        .answer-btn:nth-child(4) { top: 480px; }
+        #feedback { 
+            position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); 
+            width: 90%; max-width: 300px; padding: 15px; border-radius: 10px; font-size: 15px; 
+            font-weight: bold; white-space: pre-line; line-height: 1.6; text-align: center; 
+            z-index: 20; backdrop-filter: blur(8px); 
+        }
+        #continue-btn { 
+            position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); 
+            width: 200px; padding: 12px 30px; 
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%); 
+            color: white; border: none; border-radius: 25px; font-size: 18px; font-weight: bold; 
+            cursor: pointer; box-shadow: 0 4px 15px rgba(40,167,69,0.4); 
+            z-index: 21; display: none; backdrop-filter: blur(5px); 
+        }
         #continue-btn:active { transform: translateX(-50%) scale(0.98); }
 
-        #debug-compass { position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.92); color: #00FF00; padding: 10px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 10px; z-index: 9999; display: none; border: 2px solid #00FF00; min-width: 240px; backdrop-filter: blur(10px); line-height: 1.5; }
+        /* ==================== 除錯面板（隱藏但保留程式碼）==================== */
+        #debug-compass { 
+            position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.92); color: #00FF00; 
+            padding: 10px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 10px; 
+            z-index: 9999; display: none; border: 2px solid #00FF00; min-width: 240px; 
+            backdrop-filter: blur(10px); line-height: 1.5; 
+        }
         #debug-compass .debug-title { color: #FFD700; font-weight: bold; font-size: 11px; margin-bottom: 4px; }
         #debug-compass .debug-section { color: #888; margin-top: 4px; border-top: 1px solid #333; padding-top: 2px; }
         #debug-compass div { margin: 1px 0; }
         #debug-compass span { color: #00FFFF; font-weight: bold; }
-        .val-good { color: #00FF88 !important; } .val-warn { color: #FFD700 !important; } .val-bad { color: #FF4444 !important; }
+        .val-good { color: #00FF88 !important; } 
+        .val-warn { color: #FFD700 !important; } 
+        .val-bad { color: #FF4444 !important; }
     </style>
 </head>
 <body>
@@ -176,6 +315,9 @@
 
     <!-- 🎵 音效元素 -->
     <audio id="scan-success-audio" src="scan_success.mp3" preload="auto"></audio>
+
+    <!-- ⏱️ 計時器 -->
+    <div id="timer-display">10:00</div>
 
     <!-- 🔼 導航箭頭與 GPS 指示 -->
     <div id="arrow-container"><div id="navigation-arrow"></div></div>
@@ -208,6 +350,8 @@
         <div id="video-controls">
             <button id="skip-video-btn" onclick="skipVideo()"></button>
         </div>
+        <!-- 結局重試按鈕 -->
+        <button id="retry-btn" onclick="location.reload()">🔄 再試一次</button>
     </div>
 
     <!-- 🔍 掃描 QR 覆蓋層 -->
@@ -230,9 +374,9 @@
         </div>
     </div>
 
-    <!-- 🧭 除錯面板 -->
+    <!-- 🧭 除錯面板（隱藏但保留程式碼）-->
     <div id="debug-compass">
-        <div class="debug-title">🧭 音效導航 v20.1</div>
+        <div class="debug-title">🧭 計時器挑戰 v21.0</div>
         <div class="debug-section">── 羅盤 ──</div>
         <div>平滑方向: <span id="debug-heading">0</span>°</div>
         <div class="debug-section">── GPS ──</div>
@@ -241,6 +385,8 @@
         <div class="debug-section">── 導航 ──</div>
         <div>目標方位: <span id="debug-target">-</span></div>
         <div>箭頭旋轉: <span id="debug-rotation">-</span>°</div>
+        <div class="debug-section">── 計時器 ──</div>
+        <div>剩餘秒數: <span id="debug-timer">-</span>s</div>
     </div>
 
     <script>
@@ -248,14 +394,25 @@
             general: {
                 gameName: "香港浸會大學 李作權大道 AR 互動遊戲",
                 welcomeTitle: "🎓 香港浸會大學\n李作權大道 AR 互動遊戲",
-                welcomeMessage: "歡迎來到互動導航體驗！\n\n你將探索浸大的李作權大道，在步行的同時回答與環境氣候相關的問題並學習新知識 🔆。\n\n✅ 請在系統提示時，允許程式存取相機、動作及方向感應器。",
+                welcomeMessage: "歡迎來到互動導航體驗！\n\n你將探索浸大的李作權大道，在步行的同時回答與環境氣候相關的問題並學習新知識 🔆。\n\n⏳ 注意：這是一場限時挑戰！請在時間結束前完成所有關卡。\n\n✅ 請在系統提示時，允許程式存取相機、動作及方向感應器。",
                 completionTitle: "🎉 恭喜完成！",
-                completionMessage: "你已成功完成香港浸會大學\n李作權大道 AR 互動導覽！\n\n感謝你與我們一起探索。"
+                completionMessage: "你已成功在限時內完成香港浸會大學\n李作權大道 AR 互動導覽！\n\n感謝你與我們一起探索。"
+            },
+            
+            // ⏳ 計時器配置
+            timer: {
+                limitSeconds: 600,        // 遊戲時間限制（秒）- 可調整
+                warningThreshold: 60,     // 警告閾值（秒）
+                winVideoPath: "winoutro.mp4",
+                failVideoPath: "failedoutro.mp4"
             },
             
             video: {
-                enableIntroVideo: true, enableOutroVideo: false, introVideoPath: "intro.mp4",
-                outroVideoPath: "outro.mp4", showSkipButton: true, skipButtonText: "跳過影片", autoPlayVideos: true
+                enableIntroVideo: true, 
+                introVideoPath: "intro.mp4",
+                showSkipButton: true, 
+                skipButtonText: "跳過影片", 
+                autoPlayVideos: true
             },
             
             assets: {
@@ -273,7 +430,8 @@
             navigation: {
                 proximityRadius: 30, hybridSwitchDistance: 25, gpsHighAccuracy: true,
                 gpsMaxAge: 0, gpsTimeout: 8000, headingSmoothness: 0.08,
-                minMovementThreshold: 2, magneticDeclination: -2.5, showDebugPanel: true
+                minMovementThreshold: 2, magneticDeclination: -2.5, 
+                showDebugPanel: false  // 🔒 除錯面板已隱藏（程式碼保留）
             },
             
             behavior: {
@@ -309,7 +467,9 @@
             ]
         };
 
-        // 遊戲狀態變數
+        // ================================================================
+        //              遊戲狀態變數
+        // ================================================================
         let gameState = 'welcome', currentCheckpointIndex = 0, deviceHeading = 0, smoothedHeading = 0;
         let videoStream = null, scanningInterval = null, isScanning = false, animationFrameId = null;
         let currentLat = null, currentLng = null, watchPositionId = null;
@@ -318,8 +478,74 @@
         let distanceHistory = [];
         const DISTANCE_HISTORY_SIZE = 5;
 
+        // ⏳ 計時器狀態變數
+        let timerInterval = null;
+        let timeRemaining = 0;
+        let timerActive = false;
+
         // ================================================================
-        //                      GPS 計算函式
+        //              ⏳ 計時器系統
+        // ================================================================
+        function startTimer() {
+            timeRemaining = GAME_CONFIG.timer.limitSeconds;
+            timerActive = true;
+            
+            const timerEl = document.getElementById('timer-display');
+            timerEl.style.display = 'block';
+            timerEl.classList.remove('timer-warning');
+            
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                if (!timerActive) return;
+                
+                timeRemaining--;
+                updateTimerDisplay();
+                
+                // 除錯面板更新（隱藏但保留功能）
+                if (GAME_CONFIG.navigation.showDebugPanel) {
+                    const debugTimer = document.getElementById('debug-timer');
+                    if (debugTimer) debugTimer.textContent = timeRemaining;
+                }
+                
+                // 警告狀態
+                const timerEl = document.getElementById('timer-display');
+                if (timeRemaining <= GAME_CONFIG.timer.warningThreshold && timeRemaining > 0) {
+                    timerEl.classList.add('timer-warning');
+                }
+                
+                // 時間耗盡
+                if (timeRemaining <= 0) {
+                    timeRemaining = 0;
+                    updateTimerDisplay();
+                    stopTimer();
+                    triggerGameFailed();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            timerActive = false;
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function hideTimer() {
+            stopTimer();
+            document.getElementById('timer-display').style.display = 'none';
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeRemaining / 60);
+            const secs = timeRemaining % 60;
+            const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            document.getElementById('timer-display').textContent = formatted;
+        }
+
+        // ================================================================
+        //              GPS 計算函式
         // ================================================================
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371000;
@@ -344,7 +570,6 @@
             return sorted[Math.floor(sorted.length / 2)];
         }
 
-        // ✅ 修正：安全的數值格式化函數
         function formatNumber(val) {
             return isFinite(val) ? Math.round(val) : '-';
         }
@@ -425,7 +650,6 @@
             actionBtn.style.pointerEvents = 'auto';
 
             if (d > GAME_CONFIG.navigation.proximityRadius) {
-                // 遠距離模式：顯示距離數字
                 arrowEl.style.display = 'block';
                 arrowEl.style.opacity = '1';
                 
@@ -445,7 +669,6 @@
                 actionBtn.classList.remove('scan-ready');
 
             } else {
-                // 接近模式：隱藏距離，引導尋找QR
                 distEl.textContent = "📍 目標就在附近";
                 distEl.className = 'dist-proximity';
                 instrEl.textContent = "🟢 你正在接近目標！準備尋找二維碼。\n\n請在周圍尋找貼有二維碼的標牌或告示。";
@@ -487,6 +710,7 @@
 
             document.getElementById('navigation-arrow').style.transform = `rotate(${rotation}deg)`;
 
+            // 除錯面板更新（隱藏但保留功能）
             if (GAME_CONFIG.navigation.showDebugPanel) {
                 document.getElementById('debug-heading').textContent = formatNumber(smoothedHeading);
                 document.getElementById('debug-target').textContent = `${formatNumber(targetBearing)}° [${navMode}]`;
@@ -607,20 +831,58 @@
         }
 
         // ================================================================
-        //              影片系統
+        //              影片系統（介紹 + 結局）
         // ================================================================
         function playIntroVideo() {
             gameState = 'introVideo';
             const v = document.getElementById('game-video');
             document.getElementById('video-source').src = GAME_CONFIG.video.introVideoPath;
+            
+            // 介紹影片：顯示跳過按鈕，隱藏重試按鈕
+            document.getElementById('skip-video-btn').style.display = 'block';
+            document.getElementById('retry-btn').style.display = 'none';
+            
             v.load(); if (GAME_CONFIG.video.autoPlayVideos) v.play().catch(() => {});
             v.onended = () => { hideOverlay('video-overlay'); promptOriginScan(); };
             showOverlay('video-overlay');
         }
 
+        function playOutroVideo(isWin) {
+            gameState = isWin ? 'winOutro' : 'failOutro';
+            const v = document.getElementById('game-video');
+            const videoPath = isWin ? GAME_CONFIG.timer.winVideoPath : GAME_CONFIG.timer.failVideoPath;
+            
+            document.getElementById('video-source').src = videoPath;
+            
+            // 結局影片：隱藏跳過按鈕
+            document.getElementById('skip-video-btn').style.display = 'none';
+            document.getElementById('retry-btn').style.display = 'none';
+            
+            // 設定重試按鈕樣式
+            const retryBtn = document.getElementById('retry-btn');
+            if (isWin) {
+                retryBtn.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
+                retryBtn.style.color = '#000';
+                retryBtn.textContent = '🏆 再挑戰一次';
+            } else {
+                retryBtn.style.background = 'linear-gradient(135deg, #00FFFF 0%, #00CCCC 100%)';
+                retryBtn.style.color = '#000';
+                retryBtn.textContent = '🔄 重新挑戰';
+            }
+            
+            v.load(); v.play().catch(() => {});
+            
+            // 影片結束後顯示重試按鈕
+            v.onended = () => {
+                document.getElementById('retry-btn').style.display = 'block';
+            };
+            
+            showOverlay('video-overlay');
+        }
+
         function skipVideo() {
             document.getElementById('game-video').pause(); hideOverlay('video-overlay');
-            if (gameState === 'introVideo') promptOriginScan(); else if (gameState === 'outroVideo') gameComplete();
+            if (gameState === 'introVideo') promptOriginScan();
         }
 
         // ================================================================
@@ -628,13 +890,9 @@
         // ================================================================
         function startQRScanning() {
             if (isScanning) return;
-            isScanning = true;
-            hideStatusPanel();
-
+            isScanning = true; hideStatusPanel();
             document.getElementById('arrow-container').style.display = 'none';
-
-            showOverlay('scanner-overlay');
-            resetScannerAppearance();
+            showOverlay('scanner-overlay'); resetScannerAppearance();
 
             if (gameState === 'scanOrigin') {
                 document.getElementById('scanner-instruction').textContent = '請掃描起點二維碼';
@@ -664,13 +922,11 @@
         }
 
         function cancelScanning() { 
-            stopScanning(); 
-            hideOverlay('scanner-overlay'); 
+            stopScanning(); hideOverlay('scanner-overlay'); 
             if (gameState === 'scanOrigin') {
                 promptOriginScan(); 
             } else if (gameState === 'scanCheckpoint') {
-                gameState = 'navigating';
-                showStatusPanel();
+                gameState = 'navigating'; showStatusPanel();
                 if (currentDistance > GAME_CONFIG.navigation.proximityRadius) {
                     document.getElementById('arrow-container').style.display = 'block';
                 }
@@ -684,12 +940,14 @@
         }
 
         // ================================================================
-        //              QR掃描結果處理（音效邏輯）
+        //              QR掃描結果處理
         // ================================================================
         function handleQRCodeDetected(content) {
             if (gameState === 'scanOrigin') {
                 if (content === GAME_CONFIG.originQR.content) {
                     hideOverlay('scanner-overlay'); 
+                    // ✅ 起點掃描成功：啟動計時器
+                    startTimer();
                     setTimeout(startNavigationToCheckpoint, 500);
                 } else {
                     document.getElementById('scanner-instruction').textContent = '❌ 二維碼錯誤！請掃描起點標記';
@@ -699,8 +957,8 @@
             } else if (gameState === 'scanCheckpoint') {
                 const cp = GAME_CONFIG.checkpoints[currentCheckpointIndex];
                 if (content === cp.qrCode) {
+                    // 🎵 檢查點掃描成功：播放音效
                     playScanSuccessSound();
-                    
                     hideOverlay('scanner-overlay'); 
                     setTimeout(showQuestion, 500);
                 } else {
@@ -719,20 +977,20 @@
             document.getElementById('arrow-container').style.display = 'none';
             document.getElementById('checkpoint-name').textContent = '歡迎來到李作權大道！';
             document.getElementById('distance-display').textContent = '';
-            document.getElementById('instruction-text').textContent = '若要開啟你的旅程，請掃描位於起點處的二維碼 📍';
+            document.getElementById('instruction-text').textContent = '若要開啟你的限時挑戰，請掃描位於起點處的二維碼 📍';
             const btn = document.getElementById('main-action-btn');
             btn.textContent = '掃描起點二維碼'; btn.disabled = false; btn.onclick = startQRScanning;
             btn.classList.remove('scan-ready');
         }
 
         function startNavigationToCheckpoint() {
-            if (currentCheckpointIndex >= GAME_CONFIG.checkpoints.length) { gameComplete(); return; }
+            if (currentCheckpointIndex >= GAME_CONFIG.checkpoints.length) { 
+                triggerGameWin(); 
+                return; 
+            }
             
             gameState = 'navigating';
-            
-            distanceHistory = [];
-            lastMovementLat = null; lastMovementLng = null;
-            currentDistance = 9999;
+            distanceHistory = []; lastMovementLat = null; lastMovementLng = null; currentDistance = 9999;
 
             showStatusPanel();
             document.getElementById('arrow-container').style.display = 'block';
@@ -743,12 +1001,8 @@
             document.getElementById('instruction-text').textContent = '請跟隨箭頭前往目的地。';
 
             const btn = document.getElementById('main-action-btn');
-            btn.textContent = '我已到達'; btn.disabled = false;
-            btn.classList.remove('scan-ready');
-            btn.onclick = function() {
-                gameState = 'scanCheckpoint';
-                startQRScanning();
-            };
+            btn.textContent = '我已到達'; btn.disabled = false; btn.classList.remove('scan-ready');
+            btn.onclick = function() { gameState = 'scanCheckpoint'; startQRScanning(); };
         }
 
         // ================================================================
@@ -756,7 +1010,6 @@
         // ================================================================
         function showQuestion() {
             gameState = 'question'; hideStatusPanel();
-            
             document.getElementById('arrow-container').style.display = 'none';
             document.getElementById('gps-indicator').style.display = 'none';
             
@@ -795,22 +1048,36 @@
             }
         }
 
-        function continueToNextCheckpoint() { hideOverlay('question-overlay'); currentCheckpointIndex++; startNavigationToCheckpoint(); }
+        function continueToNextCheckpoint() { 
+            hideOverlay('question-overlay'); 
+            currentCheckpointIndex++; 
+            startNavigationToCheckpoint(); 
+        }
 
         // ================================================================
-        //              遊戲完成
+        //              遊戲結局系統
         // ================================================================
-        function gameComplete() {
-            gameState = 'complete'; hideAllOverlays();
+        function triggerGameWin() {
+            // 停止計時器和所有活動
+            hideTimer();
+            hideAllOverlays();
             document.getElementById('arrow-container').style.display = 'none';
             document.getElementById('gps-indicator').style.display = 'none';
-            showStatusPanel();
-            document.getElementById('checkpoint-name').textContent = GAME_CONFIG.general.completionTitle;
-            document.getElementById('distance-display').textContent = '';
-            document.getElementById('instruction-text').textContent = GAME_CONFIG.general.completionMessage;
-            const btn = document.getElementById('main-action-btn');
-            btn.textContent = '重新開始'; btn.onclick = () => location.reload();
-            btn.classList.remove('scan-ready');
+            
+            // 播放勝利結局影片
+            playOutroVideo(true);
+        }
+
+        function triggerGameFailed() {
+            // 時間耗盡：停止所有活動
+            hideTimer();
+            stopScanning();
+            hideAllOverlays();
+            document.getElementById('arrow-container').style.display = 'none';
+            document.getElementById('gps-indicator').style.display = 'none';
+            
+            // 播放失敗結局影片
+            playOutroVideo(false);
         }
 
         // ================================================================
@@ -845,6 +1112,12 @@
             document.getElementById('checkpoint-name').style.color = cfg.appearance.primaryColor;
             document.getElementById('skip-video-btn').textContent = cfg.video.skipButtonText;
             if (!cfg.video.showSkipButton) document.getElementById('skip-video-btn').style.display = 'none';
+
+            // 初始化計時器顯示
+            const mins = Math.floor(cfg.timer.limitSeconds / 60);
+            const secs = cfg.timer.limitSeconds % 60;
+            document.getElementById('timer-display').textContent = 
+                `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         }
 
         // ================================================================
@@ -854,20 +1127,27 @@
         function hideOverlay(id) { document.getElementById(id).classList.add('hidden'); }
         function showStatusPanel() { document.getElementById('status-panel').classList.remove('hidden'); }
         function hideStatusPanel() { document.getElementById('status-panel').classList.add('hidden'); }
-        function hideAllOverlays() { document.querySelectorAll('.overlay').forEach(o => { if (o.id !== 'welcome-screen') o.classList.add('hidden'); }); }
+        function hideAllOverlays() { 
+            document.querySelectorAll('.overlay').forEach(o => { 
+                if (o.id !== 'welcome-screen') o.classList.add('hidden'); 
+            }); 
+        }
 
+        // 除錯面板控制（隱藏但保留邏輯）
         setInterval(() => {
-            document.getElementById('debug-compass').style.display = (GAME_CONFIG.navigation.showDebugPanel && gameState === 'navigating') ? 'block' : 'none';
+            document.getElementById('debug-compass').style.display = 
+                (GAME_CONFIG.navigation.showDebugPanel && gameState === 'navigating') ? 'block' : 'none';
         }, 500);
 
+        // 資源清理
         window.addEventListener('beforeunload', () => {
-            stopCameraStream(); stopScanning(); stopGPSTracking();
+            stopCameraStream(); stopScanning(); stopGPSTracking(); hideTimer();
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
         });
 
         window.addEventListener('DOMContentLoaded', () => {
             applyConfiguration();
-            console.log('🚀 HKBU AR Game v20.1 - 音效系統修復版');
+            console.log('🚀 HKBU AR Game v21.0 - 限時挑戰系統');
         });
     </script>
 </body>
