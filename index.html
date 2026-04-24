@@ -408,10 +408,12 @@
             video: {
                 enableIntroVideo: true,
                 introVideoPath: "chineseintro.mp4",
+                transitionVideoPath: "updatedtransition.mp4",  // ⬅️ 新增這一行
                 showSkipButton: true,
                 skipButtonText: "跳過影片",
                 autoPlayVideos: true
             },
+
             
             assets: {
                 welcomeBackground: "welcome-bg.png", cardWidth: "87vw", cardMaxWidth: "400px",
@@ -814,6 +816,27 @@
         // ================================================================
         //              影片系統
         // ================================================================
+        function playTransitionVideo() {
+            gameState = 'transitionVideo';
+            const v = document.getElementById('game-video');
+            document.getElementById('video-source').src = GAME_CONFIG.video.transitionVideoPath;
+            
+            // 過場影片可跳過，隱藏重試按鈕
+            document.getElementById('skip-video-btn').style.display = 'block';
+            document.getElementById('retry-btn').style.display = 'none';
+            
+            v.load();
+            v.play().catch(() => {});
+            
+            // 播完後進入下一個導航階段
+            v.onended = () => {
+                hideOverlay('video-overlay');
+                startNavigationToCheckpoint();
+            };
+            
+            showOverlay('video-overlay');
+        }
+
         function playIntroVideo() {
             gameState = 'introVideo';
             const v = document.getElementById('game-video');
@@ -856,7 +879,11 @@
         function skipVideo() {
             document.getElementById('game-video').pause();
             hideOverlay('video-overlay');
-            if (gameState === 'introVideo') promptOriginScan();
+            if (gameState === 'introVideo') {
+                promptOriginScan();
+            } else if (gameState === 'transitionVideo') {  // ⬅️ 新增這個條件
+                startNavigationToCheckpoint();
+            }
         }
 
         // ================================================================
@@ -1019,7 +1046,13 @@
         function continueToNextCheckpoint() {
             hideOverlay('question-overlay');
             currentCheckpointIndex++;
-            startNavigationToCheckpoint();
+            
+            // 如果還有下一個檢查點，播放過場影片；否則直接進入結局
+            if (currentCheckpointIndex < GAME_CONFIG.checkpoints.length) {
+                playTransitionVideo();
+            } else {
+                startNavigationToCheckpoint(); // 觸發遊戲勝利
+            }
         }
 
         // ================================================================
