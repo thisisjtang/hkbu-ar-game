@@ -376,7 +376,7 @@
 
     <!-- 🧭 除錯面板（隱藏但保留程式碼）-->
     <div id="debug-compass">
-        <div class="debug-title">🧭 雷達導航 v22.0</div>
+        <div class="debug-title">🧭 六檢查點挑戰 v23.0</div>
         <div class="debug-section">── 羅盤 ──</div>
         <div>平滑方向: <span id="debug-heading">0</span>°</div>
         <div class="debug-section">── GPS ──</div>
@@ -394,7 +394,7 @@
             general: {
                 gameName: "香港浸會大學 李作權大道 AR 互動遊戲",
                 welcomeTitle: "🎓 香港浸會大學\n李作權大道 AR 互動遊戲",
-                welcomeMessage: "歡迎來到互動導航體驗！\n\n你將探索浸大的李作權大道，在步行的同時回答與環境氣候相關的問題並學習新知識 🔆。\n\n⏳ 注意：這是一場限時挑戰！請在時間結束前完成所有關卡。\n\n✅ 請在系統提示時，允許程式存取相機、動作及方向感應器。",
+                welcomeMessage: "歡迎來到互動導航體驗！\n\n你將探索浸大的李作權大道，在步行的同時回答與校園相關的問題並學習新知識 🏫。\n\n⏳ 注意：這是一場限時挑戰！請在時間結束前完成所有關卡。\n\n✅ 請在系統提示時，允許程式存取相機、動作及方向感應器。",
                 completionTitle: "🎉 恭喜完成！",
                 completionMessage: "你已成功在限時內完成香港浸會大學\n李作權大道 AR 互動導覽！"
             },
@@ -435,15 +435,14 @@
                 showDebugPanel: false
             },
 
-            // 🔊 雷達音效距離配置（可調整）
             radarSound: {
-                farDistance: 100,       // 超過此距離為遠距離模式
-                mediumDistance: 50,     // 超過此距離為中距離模式
-                closeDistance: 30,      // 超過此距離為近距離模式
-                farInterval: 5000,      // 遠距離：每5秒
-                mediumInterval: 3000,   // 中距離：每3秒
-                closeInterval: 1000,    // 近距離：每1秒
-                nearInterval: 500       // 接近模式：每0.5秒
+                farDistance: 100,
+                mediumDistance: 50,
+                closeDistance: 30,
+                farInterval: 5000,
+                mediumInterval: 3000,
+                closeInterval: 1000,
+                nearInterval: 500
             },
             
             behavior: {
@@ -456,25 +455,46 @@
             
             checkpoints: [
                 {
-                    name: "圖書館台階", qrCode: "HKBU_CP1", lat: 22.338333, lng: 114.182222, staticBearing: 350,
-                    question: "哪種氣體是導致全球暖化主要的溫室氣體？",
-                    answers: ["A. 氮氣 (N₂)", "B. 氧氣 (O₂)", "C. 二氧化碳 (CO₂)", "D. 氬氣 (Ar)"],
-                    correctAnswerIndex: 2, hint: "這種氣體主要來自燃燒化石燃料（如汽車廢氣）以及我們的呼吸，植物則會吸收它。",
-                    arrivalMessage: "📍 你已到達圖書館台階！"
+                    name: "圖書館", qrCode: "HKBU_CP1", lat: 22.3384701, lng: 114.1820981, staticBearing: 7,
+                    question: "區樹洪紀念圖書館在哪一年落成？",
+                    answers: ["A. 1994", "B. 1995", "C. 1996", "D. 1997"],
+                    correctAnswerIndex: 1, hint: "留意圖書館入口附近的落成紀念牌匾，上面刻有年份。",
+                    arrivalMessage: "📍 你已到達圖書館！"
                 },
                 {
-                    name: "學生中心", qrCode: "HKBU_CP2", lat: 22.337778, lng: 114.181944, staticBearing: 173,
-                    question: "哪種做法最能有效減少日常交通產生的溫室氣體排放？",
-                    answers: ["A. 短途旅行也獨自駕駛私家車", "B. 盡可能搭乘大眾運輸工具、騎單車或步行", "C. 停車等候時不熄火（引擎保持怠速）", "D. 捨棄火車，改為頻繁搭乘短途飛機"],
-                    correctAnswerIndex: 1, hint: "想想看，哪種方式可以讓更多人同時移動，或者完全不需要消耗燃料？",
-                    arrivalMessage: "📍 你已到達學生中心！"
+                    name: "Pacific Coffee", qrCode: "HKBU_CP2", lat: 22.3378694, lng: 114.1818422, staticBearing: 201,
+                    question: "如若是浸會大學學生，購買可享有什麼優惠？",
+                    answers: ["A. 7折", "B. 75折", "C. 8折", "D. 9折"],
+                    correctAnswerIndex: 0, hint: "看看收銀台附近的學生優惠告示或餐廳外的推廣立牌。",
+                    arrivalMessage: "📍 你已到達 Pacific Coffee！"
                 },
                 {
-                    name: "教學大樓", qrCode: "HKBU_CP3", lat: 22.337625, lng: 114.181944, staticBearing: 177,
-                    question: "哪種能源屬於可再生能源，且在發電時有助於減少大氣污染？",
-                    answers: ["A. 煤炭", "B. 天然氣", "C. 風能", "D. 柴油"],
-                    correctAnswerIndex: 2, hint: "這種能源來自大自然中永不枯竭的力量，且發電過程非常潔淨。",
-                    arrivalMessage: "📍 你已到達教學大樓！"
+                    name: "印刷房 Printing room", qrCode: "HKBU_CP3", lat: 22.3375993, lng: 114.1820010, staticBearing: 152,
+                    question: "你猜猜看一個大學生四年的免費印刷的總額度有多少？",
+                    answers: ["A. $530", "B. $590", "C. $630", "D. $690"],
+                    correctAnswerIndex: 2, hint: "想一下每年的額度大約是 $150 左右，再加上一些額外補貼。",
+                    arrivalMessage: "📍 你已到達印刷房！"
+                },
+                {
+                    name: "思齊樓入口", qrCode: "HKBU_CP4", lat: 22.3373378, lng: 114.1818332, staticBearing: 211,
+                    question: "DLB stands for?",
+                    answers: ["A. David Lee Building", "B. Derek Lee Building", "C. David Lam Building", "D. Derek Lam Building"],
+                    correctAnswerIndex: 2, hint: "抬頭看看大樓正門上方或旁邊的水牌，那裡有大樓的全稱。",
+                    arrivalMessage: "📍 你已到達思齊樓入口！"
+                },
+                {
+                    name: "TriAngle", qrCode: "HKBU_CP5", lat: 22.3371018, lng: 114.1819545, staticBearing: 155,
+                    question: "Triangle 的開放時間？",
+                    answers: ["A. 星期一至五 09:00 - 21:00；星期六 09:00 - 13:00 (週日及假期休息)", "B. 星期一至五 10:00 - 18:00 (週六、日及假期休息)", "C. 星期一至六 08:30 - 22:00 (假期除外)", "D. 星期一至六 10:00 - 19:00 (週日及假期休息)"],
+                    correctAnswerIndex: 1, hint: "這是一個專為學生設計的共享空間，開放時間通常與辦公時間一致，請查看玻璃門上的標示。",
+                    arrivalMessage: "📍 你已到達 TriAngle！"
+                },
+                {
+                    name: "橋", qrCode: "HKBU_CP6", lat: 22.3366914, lng: 114.1822556, staticBearing: 146,
+                    question: "這座橋是連接了李作權大道和？",
+                    answers: ["A. AAB （行政及教學大樓）", "B. CVA（傳理視藝大樓 ）", "C. DLB （林護紀念大樓）", "D. WLB（永隆銀行商學大樓）"],
+                    correctAnswerIndex: 0, hint: "順著橋的方向看過去，前方那座最高的、有很多行政辦公室的大樓就是目的地。",
+                    arrivalMessage: "📍 你已到達橋！"
                 }
             ]
         };
@@ -500,7 +520,7 @@
 
         // 🔊 雷達導航音效狀態
         let navigationSoundInterval = null;
-        let currentSoundZone = null; // 'far' | 'medium' | 'close' | 'near'
+        let currentSoundZone = null;
 
         // ================================================================
         //              ⏳ 計時器系統
@@ -675,7 +695,6 @@
 
             actionBtn.onclick = function() { gameState = 'scanCheckpoint'; startQRScanning(); };
 
-            // 🔊 根據最新距離更新雷達音效
             updateRadarSound();
         }
 
@@ -771,7 +790,6 @@
             const navAudio = document.getElementById('navigation-sound-audio');
             if (!audio) return;
 
-            // 預載所有音效
             audio.load();
             if (navAudio) navAudio.load();
 
@@ -779,16 +797,13 @@
                 if (audioUnlocked) return;
                 audioUnlocked = true;
 
-                // 靜音解鎖掃描音效
                 const originalVolume = audio.volume;
                 audio.volume = 0;
                 audio.play().then(() => {
                     audio.pause();
                     audio.currentTime = 0;
                     audio.volume = originalVolume;
-                    console.log('✅ 掃描音效已靜音解鎖');
 
-                    // 同步解鎖導航雷達音效
                     if (navAudio) {
                         const navOriginalVolume = navAudio.volume;
                         navAudio.volume = 0;
@@ -796,17 +811,14 @@
                             navAudio.pause();
                             navAudio.currentTime = 0;
                             navAudio.volume = navOriginalVolume;
-                            console.log('✅ 導航音效已靜音解鎖');
                         }).catch(() => {});
                     }
                 }).catch(() => {
                     audio.volume = originalVolume;
                     audioUnlocked = false;
-                    console.log('⚠️ 音效解鎖失敗，將在下次互動時重試');
                 });
             };
 
-            // 延遲綁定，避免 startGame() 點擊事件誤觸發
             setTimeout(() => {
                 document.addEventListener('touchstart', unlockAudio, { once: true });
                 document.addEventListener('click', unlockAudio, { once: true });
@@ -835,7 +847,6 @@
         }
 
         function updateRadarSound() {
-            // 只在導航狀態下運作
             if (gameState !== 'navigating') {
                 stopRadarSound();
                 return;
@@ -846,31 +857,26 @@
             let targetZone = null;
             let intervalMs = null;
 
-            // 根據距離決定音效區間和頻率
             if (d > rs.farDistance) {
                 targetZone = 'far';
-                intervalMs = rs.farInterval;       // 每5秒
+                intervalMs = rs.farInterval;
             } else if (d > rs.mediumDistance) {
                 targetZone = 'medium';
-                intervalMs = rs.mediumInterval;    // 每3秒
+                intervalMs = rs.mediumInterval;
             } else if (d > rs.closeDistance) {
                 targetZone = 'close';
-                intervalMs = rs.closeInterval;     // 每1秒
+                intervalMs = rs.closeInterval;
             } else {
                 targetZone = 'near';
-                intervalMs = rs.nearInterval;      // 每0.5秒
+                intervalMs = rs.nearInterval;
             }
 
-            // 只有區間改變時才重設，避免不必要的中斷
             if (currentSoundZone !== targetZone) {
                 stopRadarSound();
                 currentSoundZone = targetZone;
 
-                // 立即播放一次，再設定定期播放
                 playNavigationSound();
                 navigationSoundInterval = setInterval(playNavigationSound, intervalMs);
-
-                console.log(`🔊 音效區間切換：${targetZone}（每 ${intervalMs}ms）`);
             }
         }
 
@@ -922,14 +928,12 @@
             const v = document.getElementById('game-video');
             document.getElementById('video-source').src = GAME_CONFIG.video.transitionVideoPath;
 
-            // 過場影片不可跳過，隱藏所有按鈕
             document.getElementById('skip-video-btn').style.display = 'none';
             document.getElementById('retry-btn').style.display = 'none';
 
             v.load();
             v.play().catch(() => {});
 
-            // 播完後進入下一個導航階段
             v.onended = () => {
                 hideOverlay('video-overlay');
                 startNavigationToCheckpoint();
@@ -970,14 +974,13 @@
             document.getElementById('game-video').pause();
             hideOverlay('video-overlay');
             if (gameState === 'introVideo') promptOriginScan();
-            // 過場影片不可跳過，故不加 transitionVideo 的條件
         }
 
         // ================================================================
         //              QR 掃描系統
         // ================================================================
         function startQRScanning() {
-            stopRadarSound(); // 🔊 進入掃描模式時停止雷達音效
+            stopRadarSound();
             if (isScanning) return;
             isScanning = true; hideStatusPanel();
             document.getElementById('arrow-container').style.display = 'none';
@@ -1092,7 +1095,7 @@
         //              問答系統
         // ================================================================
         function showQuestion() {
-            stopRadarSound(); // 🔊 進入問答模式時停止雷達音效
+            stopRadarSound();
             gameState = 'question'; hideStatusPanel();
             document.getElementById('arrow-container').style.display = 'none';
             document.getElementById('gps-indicator').style.display = 'none';
@@ -1136,11 +1139,10 @@
             hideOverlay('question-overlay');
             currentCheckpointIndex++;
 
-            // 如果還有下一個檢查點，播放過場影片；否則觸發勝利
             if (currentCheckpointIndex < GAME_CONFIG.checkpoints.length) {
                 playTransitionVideo();
             } else {
-                startNavigationToCheckpoint(); // 觸發遊戲勝利
+                startNavigationToCheckpoint();
             }
         }
 
@@ -1148,7 +1150,7 @@
         //              遊戲結局系統
         // ================================================================
         function triggerGameWin() {
-            stopRadarSound(); // 🔊 勝利時停止雷達音效
+            stopRadarSound();
             hideTimer(); hideAllOverlays();
             document.getElementById('arrow-container').style.display = 'none';
             document.getElementById('gps-indicator').style.display = 'none';
@@ -1156,7 +1158,7 @@
         }
 
         function triggerGameFailed() {
-            stopRadarSound(); // 🔊 失敗時停止雷達音效
+            stopRadarSound();
             hideTimer(); stopScanning(); hideAllOverlays();
             document.getElementById('arrow-container').style.display = 'none';
             document.getElementById('gps-indicator').style.display = 'none';
@@ -1215,7 +1217,6 @@
             });
         }
 
-        // 除錯面板控制（隱藏但保留邏輯）
         setInterval(() => {
             document.getElementById('debug-compass').style.display =
                 (GAME_CONFIG.navigation.showDebugPanel && gameState === 'navigating') ? 'block' : 'none';
@@ -1228,7 +1229,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             applyConfiguration();
-            console.log('🚀 HKBU AR Game v22.0 - 雷達導航音效系統');
+            console.log('🚀 HKBU AR Game v23.0 - 六檢查點完整版');
         });
     </script>
 </body>
