@@ -255,15 +255,15 @@
         }
         #question-text { 
             position: absolute; 
-            top: 98px;           /* 原本 58px + 40px margin-top = 98px */
+            top: 98px; 
             left: 50%; 
             transform: translateX(-50%); 
             font-size: 13px; text-align: left; 
             width: 150px; 
             font-weight: bold; line-height: 1.5; 
             color: #333; text-shadow: 0 1px 2px rgba(255,255,255,0.7); 
-            margin-top: 0;       /* 移除，改用 top 統一控制 */
-            margin-left: 10px;   /* 微調至最佳視覺位置 */
+            margin-top: 0; 
+            margin-left: -5px; 
             z-index: 12; 
         }
         #answer-buttons { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -383,7 +383,7 @@
 
     <!-- 🧭 除錯面板（隱藏但保留程式碼）-->
     <div id="debug-compass">
-        <div class="debug-title">🧭 六檢查點挑戰 v23.0</div>
+        <div class="debug-title">🧭 六檢查點挑戰 v23.2</div>
         <div class="debug-section">── 羅盤 ──</div>
         <div>平滑方向: <span id="debug-heading">0</span>°</div>
         <div class="debug-section">── GPS ──</div>
@@ -453,7 +453,8 @@
             },
             
             behavior: {
-                qrScanInterval: 500, scanErrorTimeout: 1500, incorrectAnswerDelay: 4000,
+                qrScanInterval: 200,  // 🔍 優化：掃描間隔從 500ms 縮短至 200ms
+                scanErrorTimeout: 1500, incorrectAnswerDelay: 4000,
                 correctAnswerBg: "rgba(212, 237, 218, 0.9)", correctAnswerText: "#155724",
                 incorrectAnswerBg: "rgba(248, 215, 218, 0.9)", incorrectAnswerText: "#721c24"
             },
@@ -746,7 +747,12 @@
             try {
                 if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
                 videoStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+                    video: {
+                        facingMode: { exact: 'environment' },
+                        width: { ideal: 1920, min: 1280 },
+                        height: { ideal: 1080, min: 720 },
+                        focusMode: 'continuous'
+                    }
                 });
                 const v = document.getElementById('camera-view'); v.srcObject = videoStream;
                 await new Promise(resolve => { v.onloadedmetadata = () => { v.play().catch(() => {}); resolve(); }; });
@@ -984,7 +990,7 @@
         }
 
         // ================================================================
-        //              QR 掃描系統
+        //              🔍 QR 掃描系統（完全優化版）
         // ================================================================
         function startQRScanning() {
             stopRadarSound();
@@ -994,24 +1000,38 @@
             showOverlay('scanner-overlay'); resetScannerAppearance();
 
             if (gameState === 'scanOrigin') {
-                document.getElementById('scanner-instruction').textContent = '請掃描起點二維碼';
+                document.getElementById('scanner-instruction').textContent = '請將起點二維碼對準框內進行掃描';
             } else if (gameState === 'scanCheckpoint') {
                 const checkpoint = GAME_CONFIG.checkpoints[currentCheckpointIndex];
-                document.getElementById('scanner-instruction').textContent = `請掃描「${checkpoint.name}」的二維碼`;
+                document.getElementById('scanner-instruction').textContent = `請將「${checkpoint.name}」的二維碼對準框內進行掃描`;
             }
             scanningInterval = setInterval(scanForQRCode, GAME_CONFIG.behavior.qrScanInterval);
         }
 
         function scanForQRCode() {
-            const video = document.getElementById('camera-view'), canvas = document.getElementById('qr-canvas'), ctx = canvas.getContext('2d');
+            const video = document.getElementById('camera-view');
+            const canvas = document.getElementById('qr-canvas');
+            // 🔍 優化：啟用 willReadFrequently 提升高頻讀取效能
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            
             if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+
             try {
-                canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const qr = jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" });
-                if (qr && qr.data) { stopScanning(); handleQRCodeDetected(qr.data); }
-            } catch(e) { console.error('QR錯誤:', e); }
+                
+                // 🔍 優化：啟用雙向對比掃描，大幅提升困難環境識別率
+                const qr = jsQR(img.data, img.width, img.height, { inversionAttempts: "attemptBoth" });
+                
+                if (qr && qr.data) {
+                    stopScanning();
+                    handleQRCodeDetected(qr.data);
+                }
+            } catch(e) {
+                console.error('QR掃描錯誤:', e);
+            }
         }
 
         function stopScanning() {
@@ -1236,7 +1256,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             applyConfiguration();
-            console.log('🚀 HKBU AR Game v23.0 - 六檢查點完整版');
+            console.log('🚀 HKBU AR Game v23.2 - QR掃描優化版');
         });
     </script>
 </body>
